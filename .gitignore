@@ -1,0 +1,3 @@
+build/*
+bold_db
+*.log

@@ -1,0 +1,51 @@
+#pragma once
+
+
+// see http://pod.tst.eu/http://cvs.schmorp.de/libev/ev.pod#EMBEDDING
+#define EV_STANDALONE 1
+#define EV_COMPAT3 0
+#define EV_USE_FLOOR 1
+#define EV_USE_MONOTONIC 0
+#define EV_USE_REALTIME 0
+#define EV_USE_CLOCK_SYSCALL 1
+#define EV_USE_NANOSLEEP 1
+#define EV_USE_EVENTFD 1
+#define EV_USE_SELECT 1
+//#define EV_SELECT_USE_FD_SET 1 //?
+//EV_SELECT_IS_WINSOCKET
+	//EV_FD_TO_WIN32_HANDLE
+	//EV_WIN32_HANDLE_TO_FD
+	//EV_WIN32_CLOSE_FD
+#define EV_USE_POLL 1
+#define EV_USE_EPOLL 1
+//#define EV_USE_KQUEUE 1 //causes error in linux
+//#define EV_USE_PORT 1 //
+//#define EV_USE_DEVPOLL 1
+#define EV_USE_INOTIFY 1
+#define EV_NO_SMP 1
+#define EV_NO_THREADS 1
+//EV_ATOMIC_T
+//EV_H
+//EV_CONFIG_H
+//EV_EVENT_H
+#define EV_PROTOTYPES 1
+#define EV_MULTIPLICITY 1
+//EV_MINPRI
+//EV_MAXPRI
+//EV_PERIODIC_ENABLE, EV_IDLE_ENABLE, EV_EMBED_ENABLE, EV_STAT_ENABLE, EV_PREPARE_ENABLE, EV_CHECK_ENABLE, EV_FORK_ENABLE, EV_SIGNAL_ENABLE, EV_ASYNC_ENABLE, EV_CHILD_ENABLE.
+//EV_FEATURES
+//EV_API_STATIC
+#define EV_AVOID_STDIO 0
+//EV_NSIG
+//EV_PID_HASHSIZE
+//EV_INOTIFY_HASHSIZE
+#define EV_USE_4HEAP 1
+#define EV_HEAP_CACHE_AT 1
+#define EV_VERIFY 1 //def=1
+//EV_COMMON
+//EV_CB_DECLARE (type)
+//EV_CB_INVOKE (watcher, revents)
+//ev_set_cb (ev, cb)
+
+
+#include "libev/ev.h"

@@ -1,0 +1,5 @@
+{
+	stop_ev_loop;
+	script_listen;
+	script_accept;
+};

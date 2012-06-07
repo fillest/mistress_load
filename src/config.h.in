@@ -1,0 +1,5 @@
+#pragma once
+
+
+#define LUA_SRC_PATH "%(lua_src_path)s"
+#define LUA_USE_LUAJIT %(lua_use_luajit)s
