@@ -39,7 +39,7 @@ function _M.HTTPHandler:run ()
 			if path_parts[1] == 'start' then
 				self.logger:info("starting at " .. tonumber(path_parts[2]))
 				--...
-				assert(not mistress.send(self._fd, utils.build_response('200 OK', {keepalive = false})))
+				assert(not mistress.send(self._fd, utils.build_response('200 OK')))
 
 				local cfg = assert(loadstring(body))()()
 				--print(inspect(cfg))
@@ -78,7 +78,10 @@ function _M.HTTPHandler:run ()
 end
 
 function _M.HTTPHandler:finish_test ()
-	--
+	self.logger:info("sending finish indication")
+	assert(not mistress.send(self._fd, utils.build_response('200 OK', {keepalive = false, body = 'finished'})))
+	C.close(self._fd)
+	--TODO break handler loop?
 end
 
 

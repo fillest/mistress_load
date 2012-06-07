@@ -131,6 +131,15 @@ function WorkersManager:run ()
 
 	self:register_test(#self._workers, delayed_start_time)
 
+	local workers_left = #self._workers
+	local function on_worker_finished ()
+		workers_left = workers_left - 1
+		if workers_left == 0 then
+			self.logger:info("all workers finished")
+			C.stop_ev_loop()
+		end
+	end
+
 	local fns = {}
 	for i, worker in ipairs(self._workers) do
 		local host, port = unpack(worker)
@@ -165,13 +174,15 @@ function WorkersManager:run ()
 				end
 				assert(status_code == 200, 'status_code = '..status_code)
 
-				--print "stub rcv"
-				--local _headers, body, _, status_code, _ = _self:receive(conn.fd)
-				--if not _headers then
-					--error(body)
-				--end
-				--assert(status_code == 200, 'status_code = '..status_code)
-				--print(body)
+				self.logger:info("waiting worker to finish")
+				local _headers, body, _, status_code, _ = _self:receive(conn.fd)
+				if not _headers then
+					error(body)
+				end
+				assert(status_code == 200, 'status_code = '..status_code)
+				assert(body == 'finished')
+
+				on_worker_finished()
 			else
 				self.logger:error("failed to connect to worker, err: " .. ((err == 111) and 'ECONNREFUSED' or err))
 			end
