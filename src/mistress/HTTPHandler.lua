@@ -45,7 +45,11 @@ function _M.HTTPHandler:run ()
 				--print(inspect(cfg))
 				cfg.opts.node_id = self._node_id
 				for i, phase in ipairs(cfg.opts.phases) do
-					phase.users_rate = phase.users_rate / #cfg.workers
+					local divided_rate = phase.users_rate / #cfg.workers
+					if (phase.users_rate % #cfg.workers) ~= 0 then
+						self.logger:warn("phase #"..i.." rate (= "..phase.users_rate..") is not not evenly divisible by workes number (n = "..#cfg.workers..")")
+					end
+					phase.users_rate = divided_rate
 				end
 				--print(inspect(cfg))
 
