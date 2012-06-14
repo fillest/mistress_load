@@ -206,6 +206,10 @@ end
 function _M.Session:get_connection (host, remote_port, group_name)
 	local ip = self._hosts_cache[host]
 	if ip then
+		if type(ip) == 'table' then
+			ip = ip[math.random(1, #ip)]
+		end
+
 		local hkey = ip .. ':' .. remote_port
 
 		local conns = self._conn_cache[hkey]
