@@ -175,7 +175,7 @@ function WorkersManager:run ()
 				assert(status_code == 200, 'status_code = '..status_code)
 
 				self.logger:info("waiting worker to finish")
-				local _headers, body, _, status_code, _ = _self:receive(conn.fd)
+				local _headers, body, _, status_code, _ = _self:receive(conn.fd, true, 0)
 				if not _headers then
 					error(body)
 				end
