@@ -273,7 +273,7 @@ static int hp_header_value_cb (http_parser *parser, const char *at, size_t lengt
 	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
 
 	if (memcmp(at, "gzip\r", strlen("gzip\r")) == 0) { //TODO not safe //TODO !!!!!!!!!!!!! \r (Accept-Encoding vs Content-Encoding ...)
-		printf("** is gzipped\n");
+		//printf("** is gzipped\n");
 		lua_pushliteral(lua_state, "is_gzipped");
 		lua_pushboolean(lua_state, 1);
 		lua_rawset(lua_state, -(1 + 2 + 2));  //result
