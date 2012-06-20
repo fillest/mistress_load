@@ -9,6 +9,7 @@ import bold
 class Builder (bold.Builder):
 	def add_options (self, parser):
 		#~ parser.add_argument('--dev', action='store_true', help="dev build")
+		parser.add_argument('--forcesl', action='store_true', help="force make luajit .so symlinks")
 		parser.add_argument('--build-dir', '-b', dest='build_dir')
 
 builder = Builder()
@@ -54,6 +55,9 @@ class LuajitBuilder (object):
 			if fail:
 				sys.exit(1)
 
+			if builder.opts.forcesl:
+				subprocess.call("ln -s /home/f/proj/mistress-load/build/dev/luajit/lib/libluajit-5.1.so.2.0.0 /home/f/proj/mistress-load/build/dev/luajit/lib/libluajit-5.1.so", shell=True)
+				subprocess.call("ln -s /home/f/proj/mistress-load/build/dev/luajit/lib/libluajit-5.1.so.2.0.0 /home/f/proj/mistress-load/build/dev/luajit/lib/libluajit-5.1.so.2", shell=True)
 			out_fpath = _prefix + '/lib/libluajit-5.1.so'
 			assert os.path.isfile(out_fpath) #can fail silently if failed to make symlink
 
