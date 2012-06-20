@@ -159,7 +159,7 @@ function WorkersManager:run ()
 		fns[#fns + 1] = function (_self)
 			_self.logger:info("communicating with woker " .. host .. ":" .. port)
 
-			local conn, err = _self:connect(assert(socket.dns.toip(host)), port)
+			local conn, err = _self:connect(socket.dns.toip(host) or host, port)
 			if not (conn == 0) then
 				local req = utils.build_req('/start/' .. delayed_start_time, {
 					host = host .. ':' .. port,
