@@ -144,11 +144,12 @@ function WorkersManager:run ()
 	for i, worker in ipairs(self._workers) do
 		local host, port = unpack(worker)
 
-		local cmd = sub([[ssh f@localhost -o "PasswordAuthentication no" 'screen -S mistress_worker${node_id} -d -m bash -c ]]
+		local cmd = sub([[ssh f@${host} -o "PasswordAuthentication no" 'screen -S mistress_worker${node_id} -d -m bash -c ]]
 			..[["cd /home/f/proj/mistress-load && build/dev/mistress --worker --test-id=${test_id} --port=${port} --node-id=${node_id} >> worker${node_id}.log 2>&1"']], {
 				node_id = i,
 				port = port,
 				test_id = self._test_id,
+				host = host,
 			})
 		self.logger:info('running: ' .. cmd)
 		if os.execute(cmd) ~= 0 then
