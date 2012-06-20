@@ -31,7 +31,6 @@ end
 
 function _M.Stat:add (type, value)
 	table.insert(self.stat_buf, {
-		time = mistress.now(),
 		type = type,
 		value = value,
 	})
