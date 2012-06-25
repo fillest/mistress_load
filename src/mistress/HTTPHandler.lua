@@ -44,21 +44,32 @@ function _M.HTTPHandler:run ()
 				assert(not mistress.send(self._fd, utils.build_response('200 OK')))
 
 				local cfg = assert(loadstring(body))()()
-				--print(inspect(cfg))
 				cfg.opts.node_id = self._node_id
+				local worker_num = #cfg.workers
 				for i, phase in ipairs(cfg.opts.phases) do
-					if phase.users_rate < #cfg.workers then
-						self.logger:error("phase #"..i.." rate ("..phase.users_rate..") is less than workers number ("..#cfg.workers..")")
-						os.exit(1)
-					end
-					local divided_rate = phase.users_rate / #cfg.workers
-					if (phase.users_rate % #cfg.workers) ~= 0 then
-						self.logger:warn("phase #"..i.." rate ("..phase.users_rate..") is not not evenly divisible by workers number ("..#cfg.workers..")")
-					end
+					if type(phase.users_rate) == 'number' then
+						if phase.users_rate < worker_num then
+							self.logger:error("phase #"..i.." rate ("..phase.users_rate..") is less than workers number ("..worker_num..")")
+							os.exit(1)
+						end
+						local divided_rate = phase.users_rate / worker_num
+						if (phase.users_rate % worker_num) ~= 0 then
+							self.logger:warn("phase #"..i.." rate ("..phase.users_rate..") is not not evenly divisible by workers number ("..worker_num..")")
+						end
 
-					phase.users_rate = divided_rate
+						phase.users_rate = divided_rate
+					elseif type(phase.users_rate) == 'table' then
+						assert(phase.users_rate[1] >= worker_num)
+						assert(phase.users_rate[2] >= worker_num)
+						assert((phase.users_rate[1] % worker_num) == 0)
+						assert((phase.users_rate[2] % worker_num) == 0)
+
+						phase.users_rate[1] = utils.round(phase.users_rate[1] / worker_num)
+						phase.users_rate[2] = utils.round(phase.users_rate[2] / worker_num)
+					else
+						error("unexpected rate type: " .. type(phase.users_rate))
+					end
 				end
-				--print(inspect(cfg))
 
 
 				self:sleep(start_time)

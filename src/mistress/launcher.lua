@@ -107,6 +107,18 @@ function _M.Launcher:finish_test (cur_step)
 	end
 end
 
+
+local function repr_rate (rate)
+	local t = type(rate)
+	if t == 'number' then
+		return tostring(rate)
+	elseif t == 'table' then
+		return "{" .. rate[1] .. ", " .. rate[2] .. "}"
+	else
+		error("unexpected rate type: " .. t)
+	end
+end
+
 function _M.Launcher:run ()
 	self.logger:info("running session launcher")
 
@@ -120,19 +132,36 @@ function _M.Launcher:run ()
 	local phases = utils.join_arrays(self.phases, {final_phase})
 	for i, phase in ipairs(phases) do
 		local is_finish_phase = (i == #phases) or self._gonna_shut_down
+		local rate = phase.users_rate
+
 		if is_finish_phase then
 			self.logger:info("starting finishing phase")
 		else
-			self.logger:info("starting phase #" .. i .. " with rate " .. phase.users_rate .. " and duration " .. phase.duration)
+			self.logger:info("starting phase #" .. i .. " with rate " .. repr_rate(rate) .. " and duration " .. phase.duration)
 		end
 
+		local calc_rate
+		local start_step = cur_step
+		if type(rate) == 'number' then
+			calc_rate = function (_cur_step) return rate end
+		elseif type(rate) == 'table' then
+			calc_rate = function (cur_step)
+				if rate[2] > rate[1] then
+					return utils.round((rate[2] - rate[1]) / phase.duration) * (cur_step - start_step + 1)
+				else
+					return utils.round((rate[1] - rate[2]) / phase.duration) * (phase.duration - (cur_step - start_step))
+				end
+			end
+		else
+			error("unexpected rate type: " .. t)
+		end
 		local phase_started = mistress.now()
 		while ((mistress.now() - phase_started) <= phase.duration) or is_finish_phase do
 			--~ self.logger:debug("tick")
 			--~ print(utils.hash_len(self.manager.sessions), self._concur_users_num)
 			--~ self.logger:debug(os.date("(%T)", mistress.now()) .. " tick")
 
-			self:tick(phase.users_rate, cur_step)
+			self:tick(calc_rate(cur_step), cur_step)
 			--~ print(utils.hash_len(self.manager.sessions), self._concur_users_num)
 			--~ for id, sess in pairs(self.manager.sessions) do
 				--~ print(debug.traceback(sess.coroutine))
