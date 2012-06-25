@@ -37,7 +37,9 @@ function _M.HTTPHandler:run ()
 			local path_parts = socket_url.parse_path(path)
 			--~ print(inspect(path_parts))
 			if path_parts[1] == 'start' then
-				self.logger:info("starting at " .. tonumber(path_parts[2]))
+				local start_time = tonumber(path_parts[2])
+
+				self.logger:info("starting at " .. start_time)
 				--...
 				assert(not mistress.send(self._fd, utils.build_response('200 OK')))
 
@@ -59,7 +61,7 @@ function _M.HTTPHandler:run ()
 				--print(inspect(cfg))
 
 
-				self:sleep(tonumber(path_parts[2]))
+				self:sleep(start_time)
 
 
 				init_launcher(cfg, self.logger, self.manager, self._test_id, self)

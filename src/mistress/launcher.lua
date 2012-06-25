@@ -158,6 +158,15 @@ function _M.Launcher:run ()
 	end
 end
 
+function _M.Launcher:tick_sleep ()
+	local ok, ex = pcall(function ()
+		self:sleep(1)
+	end)
+	if (not ok) and (ex ~= uthread.STOP) then
+		error(ex)
+	end
+end
+
 function _M.Launcher:tick (rate, cur_step)
 	self._concur_users_num_max = self._concur_users_num
 	self._concur_users_num_min = self._concur_users_num
@@ -205,11 +214,7 @@ function _M.Launcher:tick (rate, cur_step)
 		end
 	end
 
-	--~ print(mistress.now(), "launcher gonna sleep")
-	local ok, ex = pcall(function () self:sleep(1) end)  -- meanwhile other sessions will run
-	if (not ok) and (ex ~= uthread.STOP) then
-		error(ex)
-	end
+	self:tick_sleep()  -- meanwhile other sessions will run
 
 	self.stat:add(stat.stypes.CONCUR_USERS_NUM_MAX, self._concur_users_num_max)
 	self.stat:add(stat.stypes.CONCUR_USERS_NUM_MIN, self._concur_users_num_min)
