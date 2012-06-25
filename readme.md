@@ -30,12 +30,18 @@ Currently I test on Debian and Ubuntu. Mistress should work on other popular Lin
 ### Prepare
     sudo apt-get install liblua5.1-socket2 liblua5.1-json liblua5.1-logging
     sudo apt-get install zlib1g-dev
+    sudo apt-get install screen
 
     sudo apt-get install git
     git clone https://github.com/fillest/mistress-load.git
     cd mistress-load
 
-    ...pip install git+https://github.com/fillest/bold.git
+    sudo apt-get install python-virtualenv
+    virtualenv --no-site-packages venv
+    source venv/bin/activate
+    pip install --upgrade pip
+    pip install git+https://github.com/fillest/bold.git
+    pip install argparse #for debian
 ### Build
     python build.py
 
