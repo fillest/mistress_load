@@ -146,14 +146,16 @@ function _M.Launcher:run ()
 			calc_rate = function (_cur_step) return rate end
 		elseif type(rate) == 'table' then
 			calc_rate = function (cur_step)
-				if rate[2] > rate[1] then
-					return utils.round((rate[2] - rate[1]) / phase.duration) * (cur_step - start_step + 1)
+				local abs_step = cur_step - start_step
+				local rate_from, rate_to = unpack(rate)
+				if rate_to > rate_from then
+					return utils.round(rate_from + ((rate_to - rate_from) / phase.duration) * abs_step)
 				else
-					return utils.round((rate[1] - rate[2]) / phase.duration) * (phase.duration - (cur_step - start_step))
+					return utils.round(rate_from - ((rate_from - rate_to) / phase.duration) * abs_step)
 				end
 			end
 		else
-			error("unexpected rate type: " .. t)
+			error("unexpected rate type: " .. type(rate))
 		end
 		local phase_started = mistress.now()
 		while ((mistress.now() - phase_started) <= phase.duration) or is_finish_phase do
