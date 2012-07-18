@@ -1,3 +1,5 @@
 build/*
 bold_db
 *.log
+venv/*
+*.pyc
