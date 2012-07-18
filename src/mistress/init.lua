@@ -80,8 +80,11 @@ function WorkersManager:init (cfg, script, ...)
 		stat_server_host = 'localhost',
 		stat_server_port = 7777,
 		--node_id = false,
+		start_delay = 8,
 	}, self._cfg.opts)
-	self._workers = cfg.workers
+
+	self._workers = self._cfg.workers
+	self._start_delay = self._cfg.opts.start_delay
 	self._script = script
 	self._no_stat_server = self._cfg.opts.no_stat_server
 
@@ -127,20 +130,9 @@ end
 function WorkersManager:run ()
 	self:connect_to_stat_server()
 
-	local delayed_start_time = mistress.now() + 2
 
-	self:register_test(#self._workers, delayed_start_time)
-
-	local workers_left = #self._workers
-	local function on_worker_finished ()
-		workers_left = workers_left - 1
-		if workers_left == 0 then
-			self.logger:info("all workers finished")
-			C.stop_ev_loop()
-		end
-	end
-
-	local fns = {}
+	self.logger:info('starting workers')
+	local t_start = os.time()
 	for i, worker in ipairs(self._workers) do
 		local host, port = unpack(worker)
 
@@ -156,6 +148,26 @@ function WorkersManager:run ()
 			self.logger:error("failed to start worker")
 			os.exit(1)
 		end
+	end
+	self:sleep(3) --TODO properly wait workers to start
+	self.logger:info('all workers were started(hopefully) in ' .. os.difftime(os.time(), t_start) .. ' seconds')
+
+
+	local delayed_start_time = mistress.now() + self._start_delay
+	self:register_test(#self._workers, delayed_start_time)
+
+	local workers_left = #self._workers
+	local function on_worker_finished ()
+		workers_left = workers_left - 1
+		if workers_left == 0 then
+			self.logger:info("all workers finished")
+			C.stop_ev_loop()
+		end
+	end
+
+	local fns = {}
+	for i, worker in ipairs(self._workers) do
+		local host, port = unpack(worker)
 
 		fns[#fns + 1] = function (_self)
 			_self.logger:info("communicating with woker " .. host .. ":" .. port)
@@ -175,6 +187,7 @@ function WorkersManager:run ()
 				end
 				assert(status_code == 200, 'status_code = '..status_code)
 
+
 				self.logger:info("waiting worker to finish")
 				local _headers, body, _, status_code, _ = _self:receive(conn.fd, true, 0)
 				if not _headers then
@@ -189,9 +202,7 @@ function WorkersManager:run ()
 			end
 		end
 	end
-
-	self:sleep(2) --TODO properly wait workers to start
-
+	self.logger:info('communicating with workers')
 	self:parallel(fns)
 end
 
