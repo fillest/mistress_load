@@ -20,12 +20,11 @@ end
 
 
 _M.HTTPHandler = session.Session:inherit()
-function _M.HTTPHandler:init (fd, node_id, test_id, ...)
+function _M.HTTPHandler:init (fd, node_id, ...)
 	self:super().init(...)
 
 	self._fd = fd
 	self._node_id = node_id
-	self._test_id = test_id
 end
 
 function _M.HTTPHandler:run ()
@@ -37,7 +36,8 @@ function _M.HTTPHandler:run ()
 			local path_parts = socket_url.parse_path(path)
 			--~ print(inspect(path_parts))
 			if path_parts[1] == 'start' then
-				local start_time = tonumber(path_parts[2])
+				local test_id = tonumber(path_parts[2])
+				local start_time = tonumber(path_parts[3])
 
 				self.logger:info("starting at " .. start_time)
 				--...
@@ -75,7 +75,7 @@ function _M.HTTPHandler:run ()
 				self:sleep(start_time)
 
 
-				init_launcher(cfg, self.logger, self.manager, self._test_id, self)
+				init_launcher(cfg, self.logger, self.manager, test_id, self)
 				self.logger:info("starting launcher")
 			else
 				assert(not mistress.send(self._fd, utils.build_response('404 Not Found', {keepalive = false})))

@@ -137,10 +137,9 @@ function WorkersManager:run ()
 		local host, port = unpack(worker)
 
 		local cmd = sub([[ssh f@${host} -o "PasswordAuthentication no" 'screen -S mistress_worker${node_id} -d -m bash -c ]]
-			..[["cd /home/f/proj/mistress-load && build/dev/mistress --worker --test-id=${test_id} --port=${port} --node-id=${node_id} >> worker${node_id}.log 2>&1"']], {
+			..[["cd /home/f/proj/mistress-load && build/dev/mistress --worker --port=${port} --node-id=${node_id} >> worker${node_id}.log 2>&1"']], {
 				node_id = i,
 				port = port,
-				test_id = self._test_id,
 				host = host,
 			})
 		self.logger:info('running: ' .. cmd)
@@ -174,7 +173,7 @@ function WorkersManager:run ()
 
 			local conn, err = _self:connect(socket.dns.toip(host) or host, port)
 			if not (conn == 0) then
-				local req = utils.build_req('/start/' .. delayed_start_time, {
+				local req = utils.build_req('/start/' .. self._test_id .. '/' .. delayed_start_time, {
 					host = host .. ':' .. port,
 					keepalive = true,
 					body = self._script,
@@ -226,7 +225,7 @@ local function run_worker (opts, logger, manager)
 
 
 	local acceptor = manager:register(function (id)
-		return Acceptor:new(fd, HTTPHandler, node_id, assert(opts['test-id']), id, logger, false, manager)
+		return Acceptor:new(fd, HTTPHandler, node_id, id, logger, false, manager)
 	end)
 	manager:plan_resume("", acceptor.id)
 
@@ -271,7 +270,7 @@ local function start ()
 	--~ print(inspect(opts))
 
 	if opts.h then
-		print "usage: ... --worker or -s script"
+		print "usage: ... <`--worker` or `-s script`>"
 		os.exit()
 	end
 
