@@ -61,8 +61,9 @@ function _M.HTTPHandler:run ()
 					elseif type(phase.users_rate) == 'table' then
 						assert(phase.users_rate[1] >= worker_num)
 						assert(phase.users_rate[2] >= worker_num)
-						assert((phase.users_rate[1] % worker_num) == 0)
-						assert((phase.users_rate[2] % worker_num) == 0)
+						if ((phase.users_rate[1] % worker_num) ~= 0) or ((phase.users_rate[2] % worker_num) ~= 0) then
+							self.logger:warn("phase #"..i.." rate is not not evenly divisible by workers number ("..worker_num..")")
+						end
 
 						phase.users_rate[1] = utils.round(phase.users_rate[1] / worker_num)
 						phase.users_rate[2] = utils.round(phase.users_rate[2] / worker_num)

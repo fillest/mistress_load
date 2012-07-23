@@ -137,7 +137,9 @@ function WorkersManager:run ()
 		local host, port = unpack(worker)
 
 		local cmd = sub([[ssh f@${host} -o "PasswordAuthentication no" 'screen -S mistress_worker${node_id} -d -m bash -c ]]
-			..[["cd /home/f/proj/mistress-load && build/dev/mistress --worker --port=${port} --node-id=${node_id} >> worker${node_id}.log 2>&1"']], {
+			..[["cd /home/f/proj/mistress-load && ]]
+			..[[build/dev/mistress --worker --port=${port} --node-id=${node_id} ]]
+			..[[>> worker${node_id}.log 2>&1"']], {
 				node_id = i,
 				port = port,
 				host = host,
@@ -197,6 +199,7 @@ function WorkersManager:run ()
 
 				on_worker_finished()
 			else
+				--tofix: err can be nil
 				self.logger:error("failed to connect to worker, err: " .. ((err == 111) and 'ECONNREFUSED' or err))
 			end
 		end
@@ -267,7 +270,6 @@ end
 
 local function start ()
 	local opts = utils.getopt(ARGV, 's')
-	--~ print(inspect(opts))
 
 	if opts.h then
 		print "usage: ... <`--worker` or `-s script`>"
