@@ -115,7 +115,10 @@ function WorkersManager:register_test (worker_num, delayed_start_time)
 	if not self._no_stat_server then
 		self.logger:info("registering test")
 
-		assert(not mistress.send(self.stat_server.conn.fd, utils.build_req('/new_test?worker_num='..worker_num..'&delayed_start_time='..delayed_start_time, {host = self.stat_server.host}))) --TODO host+port
+		assert(not mistress.send(self.stat_server.conn.fd, utils.build_req(
+			'/new_test?worker_num='..worker_num..'&delayed_start_time='..delayed_start_time,
+			{method = 'POST', host = self.stat_server.host, body = self._script}
+		))) --TODO host+port
 		local _headers, body, _, status_code, _ = self:receive(self.stat_server.conn.fd)
 		if not _headers then
 			error("conn to stat server was closed")
