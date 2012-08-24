@@ -4,6 +4,11 @@ import subprocess
 import os.path
 import os
 import bold
+import platform
+
+
+platform_name, _, _ = platform.dist()
+is_debian = platform_name.lower() == 'debian'
 
 
 class Builder (bold.Builder):
@@ -55,9 +60,10 @@ class LuajitBuilder (object):
 			if fail:
 				sys.exit(1)
 
-			if builder.opts.forcesl:
-				subprocess.call("ln -s /home/f/proj/mistress-load/build/dev/luajit/lib/libluajit-5.1.so.2.0.0 /home/f/proj/mistress-load/build/dev/luajit/lib/libluajit-5.1.so", shell=True)
-				subprocess.call("ln -s /home/f/proj/mistress-load/build/dev/luajit/lib/libluajit-5.1.so.2.0.0 /home/f/proj/mistress-load/build/dev/luajit/lib/libluajit-5.1.so.2", shell=True)
+			if is_debian or builder.opts.forcesl:
+				libpath = _prefix + '/lib/libluajit-5.1.so.2.0.0'
+				subprocess.check_call("ln -s %s %s/lib/libluajit-5.1.so" % (libpath, _prefix), shell=True)
+				subprocess.check_call("ln -s %s %s/lib/libluajit-5.1.so.2" % (libpath, _prefix), shell=True)
 			out_fpath = _prefix + '/lib/libluajit-5.1.so'
 			assert os.path.isfile(out_fpath) #can fail silently if failed to make symlink
 
