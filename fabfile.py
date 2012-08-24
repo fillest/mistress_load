@@ -5,9 +5,9 @@ from fabric.context_managers import cd, prefix
 
 
 env.hosts = [  #TODO
-	'f@localhost',
 	'f@10.40.27.137',
 	#'f@10.40.25.219',
+	# 'f@localhost',
 	#'f@10.40.27.38',
 	#'f@10.40.27.55',
 ]
@@ -23,11 +23,11 @@ def pack ():
 def upload ():
 	put('src.tar.gz', '/tmp')
 	try:
-		run('tar -xf /tmp/src.tar.gz -C /home/f/proj/mistress-load')  #TODO
+		run('tar -xf /tmp/src.tar.gz -C ~/proj/mistress-load')  #TODO
 	finally:
 		run('rm /tmp/src.tar.gz')
 
-	with cd('/home/f/proj/mistress-load'):  #TODO
+	with cd('~/proj/mistress-load'):  #TODO
 		with prefix('source venv/bin/activate'):  #TODO
 			run('python build.py')
 
