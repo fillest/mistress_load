@@ -789,7 +789,11 @@ static void cb_connect (EV_P_ ev_io *w, int revents) {
 }
 
 static void cb_connect_timeout (EV_P_ ev_timer *w, int _revents) {
-	//~ printf("**cb_connect_timeout\n");
+	// char buff[100];
+	// time_t now = time (0);
+	// strftime (buff, 100, "%Y-%m-%d %H:%M:%S.000", localtime (&now));
+	// printf("** %s cb_connect_timeout\n", buff);
+	
 	composite_io_watcher *watchers = (composite_io_watcher *)(((char *)w) - offsetof (composite_io_watcher, timeout_watcher));
 
 	lua_getfield(lua_state, LUA_REGISTRYINDEX, "plan_resume");

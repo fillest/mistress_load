@@ -172,6 +172,14 @@ function WorkersManager:run ()
 		end
 	end
 
+	self.logger:debug('resolving hosts')
+	local workers_resolved = {}
+	for i, worker in ipairs(self._workers) do
+		local host, _port = unpack(worker)
+		local h = socket.dns.toip(host) or host
+		workers_resolved[host] = h
+	end
+
 	local fns = {}
 	for i, worker in ipairs(self._workers) do
 		local host, port = unpack(worker)
@@ -179,7 +187,10 @@ function WorkersManager:run ()
 		fns[#fns + 1] = function (_self)
 			_self.logger:info("communicating with woker " .. host .. ":" .. port)
 
-			local conn, err = _self:connect(socket.dns.toip(host) or host, port)
+			local t_start = os.time()
+			local conn, err = _self:connect(workers_resolved[host], port, {timeout = 40})
+			self.logger:info(host .. ":" .. port .. ' connect took ' .. os.difftime(os.time(), t_start) .. ' seconds')
+
 			if not (conn == 0) then
 				local req = utils.build_req('/start/' .. self._test_id .. '/' .. delayed_start_time, {
 					host = host .. ':' .. port,
@@ -206,7 +217,7 @@ function WorkersManager:run ()
 				on_worker_finished()
 			else
 				--tofix: err can be nil
-				self.logger:error("failed to connect to worker, err: " .. ((err == 111) and 'ECONNREFUSED' or err))
+				self.logger:error("failed to connect to worker, err: " .. ((err == 111) and 'ECONNREFUSED' or err or 'timeout'))
 			end
 		end
 	end
