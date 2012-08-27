@@ -176,7 +176,12 @@ function WorkersManager:run ()
 	local workers_resolved = {}
 	for i, worker in ipairs(self._workers) do
 		local host, _port = unpack(worker)
-		local h = socket.dns.toip(host) or host
+		local h
+		if host:match('%d+.%d+.%d+.%d+') then
+			h = host
+		else
+			h = assert(socket.dns.toip(host))
+		end
 		workers_resolved[host] = h
 	end
 
