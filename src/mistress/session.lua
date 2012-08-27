@@ -358,11 +358,12 @@ function _M.Session:http (host, path, opts)
 		--print(inspect(cookies))
 
 		local req = utils.build_req(path, {
+			method = opts.method,
 			host = (opts.remote_port == 80) and host or (host .. ':' .. opts.remote_port),
 			keepalive = opts.keepalive,
 			basic_auth = opts.basic_auth,
 			cookies = cookies,
-			referer = referer,
+			referer = opts.referer,
 		})
 		--~ print(req)--;os.exit()
 		assert(not mistress.send(conn.fd, req))
