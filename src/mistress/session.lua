@@ -348,6 +348,8 @@ function _M.Session:http (host, path, opts)
 		referer = false,
 		fetch_body = false,
 		receive_timeout = false,
+		headers = {},
+		body = false,
 	}, opts)
 
 	local conn, mark_busy, mark_free = self:get_connection(host, opts.remote_port, opts.group_name)
@@ -364,6 +366,8 @@ function _M.Session:http (host, path, opts)
 			basic_auth = opts.basic_auth,
 			cookies = cookies,
 			referer = opts.referer,
+			headers = opts.headers,
+			body = opts.body,
 		})
 		--~ print(req)--;os.exit()
 		assert(not mistress.send(conn.fd, req))

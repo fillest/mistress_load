@@ -143,6 +143,7 @@ function _M.build_req (path, opts)
 		basic_auth = false,
 		cookies = false,
 		referer = false,
+		headers = {},
 	}, opts)
 
 	local lines = {
@@ -150,11 +151,19 @@ function _M.build_req (path, opts)
 
 		"Connection: " .. (opts.keepalive and "Keep-Alive" or "close"),
 		"Accept-Encoding: gzip, deflate",
-		"Accept: */*",
 		"User-Agent: " .. opts.user_agent,
 		--~ "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7",
 		"Accept-Language: en-us,en;q=0.5",
 	}
+
+	for name, value in pairs(opts.headers) do
+		table.insert(lines, name .. ": " .. value)
+	end
+
+	if not opts.headers['Accept'] then
+		table.insert(lines, "Accept: */*")
+	end
+
 	assert(opts.host)
 	if opts.host then
 		table.insert(lines, "Host: " .. opts.host)
