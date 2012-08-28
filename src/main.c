@@ -536,37 +536,114 @@ static int lua_mistress_receive (lua_State *L) {
 }
 
 
+static void cb_send_ready (EV_P_ ev_io *w, int revents) {
+	composite_io_watcher *watchers = (composite_io_watcher *)(((char *)w) - offsetof (composite_io_watcher, io_watcher));
+	
+	int ern;
+	socklen_t ern_len = sizeof (ern);
+	if (getsockopt(w->fd, SOL_SOCKET, SO_ERROR, &ern, &ern_len)) {
+		printf("**failed to getsockopt at cb_send_ready\n");
+		exit(EXIT_FAILURE);
+	}
+	if (ern) {
+		printf("**error at cb_send_ready: %i\n", ern);
+		exit(EXIT_FAILURE);
+	}
+
+	lua_getfield(lua_state, LUA_REGISTRYINDEX, "plan_resume");
+	int arg_num = 0;
+
+	lua_pushliteral(lua_state, "cb_send_ready");
+	++arg_num;
+
+	lua_pushinteger(lua_state, watchers->coroutine_id);
+	++arg_num;
+
+	int res_num = 0;
+	if (lua_pcall(lua_state, arg_num, res_num, 0)) {
+		printf("error running plan_resume at cb_send_ready: %s\n", lua_tostring(lua_state, -1));
+		exit(EXIT_FAILURE);
+	}
+}
+
+static void cb_send_timeout (EV_P_ ev_timer *w, int _revents) {
+	composite_io_watcher *watchers = (composite_io_watcher *)(((char *)w) - offsetof (composite_io_watcher, timeout_watcher));
+
+	lua_getfield(lua_state, LUA_REGISTRYINDEX, "plan_resume");
+
+	lua_pushliteral(lua_state, "cb_send_timeout");
+	
+	lua_pushinteger(lua_state, watchers->coroutine_id);
+
+	lua_pushboolean(lua_state, true);
+
+	if (lua_pcall(lua_state, 3, 0, 0)) { //args, results
+		printf("error running plan_resume at cb_send_timeout: %s\n", lua_tostring(lua_state, -1));
+		exit(EXIT_FAILURE);
+	}
+}
+
 static int lua_mistress_send (lua_State *L) {
 	int fd = luaL_checkint(L, 1);
 	size_t len;
 	const char *buffer = luaL_checklstring(L, 2, &len);
+	int coroutine_id = luaL_optinteger(L, 3, 0);
+	int pos = luaL_optinteger(L, 4, 0);
 
-	int res_num = 0;
+	int ret_num = 0;
 
-	ssize_t total = 0;
-	ssize_t bytesleft = len;
-	while(total < len) {
+	ssize_t total_sent = pos;
+	ssize_t bytes_left = len - pos;
+	while (total_sent < len) {
 		errno = 0;
-		ssize_t bytes_sent = send(fd, buffer + total, bytesleft, MSG_NOSIGNAL);
+		ssize_t bytes_sent = send(fd, buffer + total_sent, bytes_left, MSG_NOSIGNAL);
 		if (bytes_sent < 0) {
-			if (errno != EPIPE) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				assert(coroutine_id > 0);
+
+				lua_pushnumber(L, 0);
+				++ret_num;
+				lua_pushnumber(L, total_sent - pos);
+				++ret_num;
+
+				struct composite_io_watcher *watchers = malloc(sizeof (struct composite_io_watcher));
+				watchers->coroutine_id = coroutine_id;
+				watchers->started = ev_now(EV_A);
+				ev_timer_init(&(watchers->timeout_watcher), cb_send_timeout, 15, 0.);
+				ev_timer_start(loop, &(watchers->timeout_watcher));
+				ev_io_init(&(watchers->io_watcher), cb_send_ready, fd, EV_WRITE);
+				ev_io_start(loop, &(watchers->io_watcher));
+
+				lua_pushlightuserdata(L, (void *)watchers);
+				lua_pushcclosure(L, &cl_destroy_composite_io_watcher, 1);
+				++ret_num;
+				return ret_num;
+			}
+			if (errno == EPIPE) {
+				lua_pushinteger(L, errno);
+				++ret_num;
+				return ret_num;
+				// break;
+			} else {
 				printf("**errno after send(): %d\n", errno);
 				perror("**error after send()");
 				exit(EXIT_FAILURE);
 			}
-			lua_pushinteger(L, errno);
-			++res_num;
-			break;
 		} else if (bytes_sent != len) {
-			printf("fd %i sent %zd (%zd of %zd)\n", fd, bytes_sent, total + bytes_sent, len);
+			printf("fd %i sent %zd (%zd of %zd)\n", fd, bytes_sent, total_sent + bytes_sent, len);
 			//exit(EXIT_FAILURE);
 		}
 
-		total += bytes_sent;
-        bytesleft -= bytes_sent;
+		total_sent += bytes_sent;
+        bytes_left -= bytes_sent;
 	}
 
-	return res_num;
+	lua_pushboolean(L, false);
+	++ret_num;
+	lua_pushnumber(L, total_sent - pos);
+	++ret_num;
+
+	return ret_num;
 }
 
 static int lua_mistress_now (lua_State *L) {

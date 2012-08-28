@@ -337,6 +337,37 @@ function _M.Session:handle_cookies (raw_cookies, host, path)
 	--~ print(inspect(self._cookies._cookies))
 end
 
+function _M.Session:send (fd, data)
+	local pos = 0
+	repeat
+		local errno, sent_len, destroy_watcher = mistress.send(fd, data, self.id, pos)
+		if errno then
+			if errno == 0 then
+				self._finalizers[destroy_watcher] = true
+
+				local timeout = self:yield()
+				assert(not timeout)
+				if self._gonna_shut_down then
+					error(uthread.STOP)
+				end
+
+				destroy_watcher()
+				self._finalizers[destroy_watcher] = nil
+
+				pos = pos + sent_len
+
+				if pos == #data then
+					return
+				end
+			else
+				return errno
+			end
+		else
+			return
+		end
+	until false
+end
+
 function _M.Session:http (host, path, opts)
 	--~ print('*****', host, path)
 	opts = utils.merge_defaults({
@@ -370,7 +401,7 @@ function _M.Session:http (host, path, opts)
 			body = opts.body,
 		})
 		--~ print(req)--;os.exit()
-		assert(not mistress.send(conn.fd, req))
+		assert(not self:send(conn.fd, req))
 		self.stat:add(stat.stypes.REQUEST_SENT, 1)
 
 		local keepalive = opts.keepalive
