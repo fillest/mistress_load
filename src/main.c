@@ -623,14 +623,13 @@ static int lua_mistress_send (lua_State *L) {
 				lua_pushinteger(L, errno);
 				++ret_num;
 				return ret_num;
-				// break;
 			} else {
 				printf("**errno after send(): %d\n", errno);
 				perror("**error after send()");
 				exit(EXIT_FAILURE);
 			}
-		} else if (bytes_sent != len) {
-			printf("fd %i sent %zd (%zd of %zd)\n", fd, bytes_sent, total_sent + bytes_sent, len);
+		// } else if (bytes_sent != len) {
+			// printf("fd %i sent %zd (%zd of %zd)\n", fd, bytes_sent, total_sent + bytes_sent, len);
 			//exit(EXIT_FAILURE);
 		}
 
