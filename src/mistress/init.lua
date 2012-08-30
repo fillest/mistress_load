@@ -103,7 +103,7 @@ function WorkersManager:connect_to_stat_server ()
 	if not self._no_stat_server then
 		self.logger:info("connecting to stat server " .. self.stat_server.host .. ":" .. self.stat_server.port)
 
-		local conn, err = self:connect(assert(socket.dns.toip(self.stat_server.host)), self.stat_server.port)
+		local conn, err = self:connect(utils.resolve_host(self.stat_server.host), self.stat_server.port)
 		if not (conn == 0) then
 			self.stat_server.conn = conn
 		else
@@ -176,13 +176,7 @@ function WorkersManager:run ()
 	local workers_resolved = {}
 	for i, worker in ipairs(self._workers) do
 		local host, _port = unpack(worker)
-		local h
-		if host:match('%d+.%d+.%d+.%d+') then
-			h = host
-		else
-			h = assert(socket.dns.toip(host))
-		end
-		workers_resolved[host] = h
+		workers_resolved[host] = utils.resolve_host(host)
 	end
 
 	local fns = {}

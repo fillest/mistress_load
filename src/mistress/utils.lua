@@ -1,5 +1,6 @@
 local mistress = assert(require 'mistress.mistress')
 local mime = assert(require('mime'))
+local socket = assert(require 'socket')
 local ffi = assert(require("ffi"))
 local C = ffi.C
 
@@ -334,6 +335,15 @@ function _M.round (num, idp)  -- from http://lua-users.org/wiki/SimpleRound
 		return math.floor(num * mult + 0.5) / mult
 	else
 		return math.ceil(num * mult - 0.5) / mult
+	end
+end
+
+
+function _M.resolve_host (host)
+	if host:match('%d+.%d+.%d+.%d+') then
+		return host
+	else
+		return assert(socket.dns.toip(host))
 	end
 end
 

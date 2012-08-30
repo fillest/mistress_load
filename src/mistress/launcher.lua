@@ -63,7 +63,7 @@ function _M.Launcher:connect_to_stat_server ()
 	if not self._no_stat_server then
 		self.logger:info("connecting to stat server " .. self.stat_server.host .. ":" .. self.stat_server.port)
 
-		local conn, err = self:connect(socket.dns.toip(self.stat_server.host) or self.stat_server.host, self.stat_server.port)
+		local conn, err = self:connect(utils.resolve_host(self.stat_server.host), self.stat_server.port)
 		if not (conn == 0) then
 			self.stat_server.conn = conn
 		else
