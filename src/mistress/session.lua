@@ -388,7 +388,6 @@ function _M.Session:http (host, path, opts)
 		mark_busy()
 
 		local cookies = self._cookies:get_by(host, path)
-		--print(inspect(cookies))
 
 		local req = utils.build_req(path, {
 			method = opts.method,
@@ -400,7 +399,7 @@ function _M.Session:http (host, path, opts)
 			headers = opts.headers,
 			body = opts.body,
 		})
-		--~ print(req)--;os.exit()
+
 		assert(not self:send(conn.fd, req))
 		self.stat:add(stat.stypes.REQUEST_SENT, 1)
 
@@ -408,6 +407,7 @@ function _M.Session:http (host, path, opts)
 		local res = nil
 		local headers_tokens, body, passed, status_code, is_keepalive = self:receive(conn.fd, opts.fetch_body, receive_timeout)
 		--~ print('*****', host, path, "RECV")
+		local headers
 		if headers_tokens then
 			if not is_keepalive then
 				keepalive = false
@@ -419,8 +419,7 @@ function _M.Session:http (host, path, opts)
 			self.stat:add(stat.stypes.RESPONSE_TIME, {opts.group_name, passed})
 			self.stat:add(stat.stypes.RESPONSE_STATUS, {opts.group_name, status_code})
 
-			local headers = parse_headers(headers_tokens)
-			--~ print("**headers", inspect(headers))
+			headers = parse_headers(headers_tokens)
 
 			if headers["Set-Cookie"] then
 				self:handle_cookies(headers["Set-Cookie"], host, path)
@@ -441,7 +440,7 @@ function _M.Session:http (host, path, opts)
 			conn:close()
 		end
 
-		return res
+		return res, headers, status_code
 	else
 		return nil
 	end
