@@ -67,7 +67,7 @@ function _M.Launcher:connect_to_stat_server ()
 		if not (conn == 0) then
 			self.stat_server.conn = conn
 		else
-			error("failed to connect to stat server, err: " .. ((err == 111) and 'ECONNREFUSED' or err))
+			error("failed to connect to stat server, err: " .. ((err == 111) and 'ECONNREFUSED' or err or 'timeout'))
 		end
 	end
 end
