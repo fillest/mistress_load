@@ -140,10 +140,14 @@ function WorkersManager:run ()
 	self.logger:info('starting workers')
 	local t_start = os.time()
 	for i, worker in ipairs(self._workers) do
-		local host, port = unpack(worker)
+		local host, port, ssh_port, ssh_user, mistress_path = unpack(worker)
 
-		local cmd = sub([[ssh f@${host} -o "PasswordAuthentication no" 'screen -S mistress_worker${node_id} -d -m bash -c ]]
-			..[["cd /home/f/proj/mistress-load && ]]
+		ssh_port = ssh_port or 22
+		ssh_user = ssh_user and (ssh_user .. "@") or ""
+		mistress_path = mistress_path or "/home/f/proj/mistress-load"
+
+		local cmd = sub([[ssh -p ]]..ssh_port.." "..ssh_user..[[${host} -o "PasswordAuthentication no" 'screen -S mistress_worker${node_id} -d -m bash -c ]]
+			..[["cd ]]..mistress_path..[[ && ]]
 			..[[build/dev/mistress --worker --port=${port} --node-id=${node_id} ]]
 			..[[>> worker${node_id}.log 2>&1"']], {
 				node_id = i,
