@@ -23,11 +23,12 @@ def pack ():
 def upload ():
 	put('src.tar.gz', '/tmp')
 	try:
-		run('tar -xf /tmp/src.tar.gz -C ~/proj/mistress-load')  #TODO
+		run('mkdir -p ~/proj/mistress-load && tar -xf /tmp/src.tar.gz -C ~/proj/mistress-load')  #TODO
 	finally:
 		run('rm /tmp/src.tar.gz')
 
 	with cd('~/proj/mistress-load'):  #TODO
+		run('test -f venv/bin/activate || (virtualenv --no-site-packages venv && source venv/bin/activate && pip install --upgrade pip && pip install git+https://github.com/fillest/bold.git && pip install argparse)')
 		with prefix('source venv/bin/activate'):  #TODO
 			run('python build.py')
 
