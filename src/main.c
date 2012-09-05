@@ -1019,7 +1019,6 @@ static int lua_mistress_connect (lua_State *L) {
 
 static void cb_accept (EV_P_ ev_io *w, int revents) {
 	composite_io_watcher *watchers = (composite_io_watcher *)(((char *)w) - offsetof (composite_io_watcher, io_watcher));
-	//~ printf("**cb_accept\n");
 
 	lua_getfield(lua_state, LUA_REGISTRYINDEX, "plan_resume");
 	int arg_num = 0;
@@ -1067,6 +1066,7 @@ static int script_accept (lua_State *L) {
 	watchers->coroutine_id = uthread_id;
 	ev_io_init(&(watchers->io_watcher), cb_accept, listen_fd, EV_READ);
 	ev_io_start(loop, &(watchers->io_watcher));
+	ev_timer_init(&(watchers->timeout_watcher), cb_sleep, 0, 0.);  //TODO this is crutch to prevent crash in cl_destroy_composite_io_watcher
 
 	int ret_num = 0;
 	lua_pushlightuserdata(L, (void *)watchers);
