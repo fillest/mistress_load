@@ -203,7 +203,7 @@ function _M.Session:connect (remote_ip, remote_port, opts)
 	end
 end
 
-function _M.Session:get_connection (host, remote_port, group_name)
+function _M.Session:get_connection (host, remote_port, group_name, opts)
 	local ip = self._hosts_cache[host]
 	if ip then
 		if type(ip) == 'table' then
@@ -225,7 +225,7 @@ function _M.Session:get_connection (host, remote_port, group_name)
 			return unpack(conn)
 		else
 			--~ local fd, passed, close_socket = self:connect(ip, remote_port)
-			local c, passed = self:connect(ip, remote_port)
+			local c, passed = self:connect(ip, remote_port, opts)
 			if not (c == 0) then
 				--~ print("**connected to " .. host .. ", fd " .. fd .. ", in " .. passed .. " sec")
 				self.stat:add(stat.stypes.CONNECT_TIME, {group_name, passed})
