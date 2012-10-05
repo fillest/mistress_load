@@ -220,7 +220,8 @@ function WorkersManager:run ()
 				on_worker_finished()
 			else
 				--tofix: err can be nil
-				self.logger:error("failed to connect to worker, err: " .. ((err == 111) and 'ECONNREFUSED' or err or 'timeout'))
+				--self.logger:
+				error("failed to connect to worker " .. host .. ":" .. port..", err: " .. ((err == 111) and 'ECONNREFUSED' or err or 'timeout'))
 			end
 		end
 	end
