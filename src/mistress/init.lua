@@ -146,7 +146,7 @@ function WorkersManager:run ()
 		ssh_user = ssh_user and (ssh_user .. "@") or ""
 		mistress_path = mistress_path or "/home/f/proj/mistress-load"
 
-		local cmd = sub([[ssh -p ]]..ssh_port.." "..ssh_user..[[${host} -o "PasswordAuthentication no" 'screen -S mistress_worker${node_id} -d -m bash -c ]]
+		local cmd = sub([[ssh -p ]]..ssh_port.." "..ssh_user..[[${host} -o "PasswordAuthentication no" -o "StrictHostKeyChecking no" 'screen -S mistress_worker${node_id} -d -m bash -c ]]
 			..[["cd ]]..mistress_path..[[ && ]]
 			..[[build/dev/mistress --worker --port=${port} --node-id=${node_id} ]]
 			..[[>> worker${node_id}.log 2>&1"']], {
