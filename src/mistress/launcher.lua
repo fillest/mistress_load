@@ -114,6 +114,8 @@ local function repr_rate (rate)
 		return tostring(rate)
 	elseif t == 'table' then
 		return "{" .. rate[1] .. ", " .. rate[2] .. "}"
+	elseif t == 'function' then
+		return "<function>" --TODO
 	else
 		error("unexpected rate type: " .. t)
 	end
@@ -154,6 +156,8 @@ function _M.Launcher:run ()
 					return utils.round(rate_from - ((rate_from - rate_to) / phase.duration) * abs_step)
 				end
 			end
+		elseif type(rate) == 'function' then
+			calc_rate = coroutine.wrap(rate)
 		else
 			error("unexpected rate type: " .. type(rate))
 		end

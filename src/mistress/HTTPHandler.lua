@@ -67,6 +67,8 @@ function _M.HTTPHandler:run ()
 
 						phase.users_rate[1] = utils.round(phase.users_rate[1] / worker_num)
 						phase.users_rate[2] = utils.round(phase.users_rate[2] / worker_num)
+					elseif type(phase.users_rate) == 'function' then
+						--TODO
 					else
 						error("unexpected rate type: " .. type(phase.users_rate))
 					end
