@@ -7,6 +7,7 @@
 * Parallel requests from one user (e.g. like browsers do)
 * Record request and generate test scripts with special proxy (a separate project)
 * Scales with cores and nodes
+* Plugin system
 * *(planned)* Monitoring integration
 
 ## Goals

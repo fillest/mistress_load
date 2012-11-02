@@ -126,7 +126,7 @@ function WorkersManager:register_test (worker_num, delayed_start_time, project_i
 		if not _headers then
 			error("conn to stat server was closed")
 		end
-		assert(status_code == 200, 'status_code == 200')
+		assert(status_code == 200, 'status_code == ' .. status_code)
 
 		self._test_id = body
 	end
@@ -190,9 +190,9 @@ function WorkersManager:run ()
 		fns[#fns + 1] = function (_self)
 			_self.logger:info("communicating with woker " .. host .. ":" .. port)
 
-			local t_start = os.time()
+			-- local t_start = os.time()
 			local conn, err = _self:connect(workers_resolved[host], port, {timeout = 40})
-			self.logger:info(host .. ":" .. port .. ' connect took ' .. os.difftime(os.time(), t_start) .. ' seconds')
+			-- self.logger:info(host .. ":" .. port .. ' connect took ' .. os.difftime(os.time(), t_start) .. ' seconds')
 
 			if not (conn == 0) then
 				local req = utils.build_req('/start/' .. self._test_id .. '/' .. delayed_start_time, {
