@@ -48,7 +48,7 @@ function _M.HTTPHandler:run ()
 				local worker_num = #cfg.workers
 				for i, phase in ipairs(cfg.opts.phases) do
 					if type(phase.users_rate) == 'number' then
-						if phase.users_rate < worker_num then
+						if phase.users_rate > 0 and phase.users_rate < worker_num then
 							self.logger:error("phase #"..i.." rate ("..phase.users_rate..") is less than workers number ("..worker_num..")")
 							os.exit(1)
 						end
