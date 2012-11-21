@@ -29,7 +29,11 @@ Currently I test on Debian and Ubuntu. Mistress should work on other popular Lin
 
 ## Setup
 ### Prepare
+    #ubuntu 12.10:
+    sudo apt-get install lua-socket lua-json lua-logging
+    #older bedian-based?:
     sudo apt-get install liblua5.1-socket2 liblua5.1-json liblua5.1-logging
+    
     sudo apt-get install zlib1g-dev
     sudo apt-get install screen
 
@@ -40,11 +44,11 @@ Currently I test on Debian and Ubuntu. Mistress should work on other popular Lin
     sudo apt-get install python-virtualenv
     virtualenv --no-site-packages venv
     source venv/bin/activate
-    pip install --upgrade pip
+    pip install --upgrade pip  #debian?
     pip install git+https://github.com/fillest/bold.git
     pip install argparse #for debian
-### Build
-    python build.py
+    
+    bold
 
 ## Usage
 First, start statistics server (or use `no_stat_server = true` in script).

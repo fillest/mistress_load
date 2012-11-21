@@ -1,103 +1,74 @@
-import sys
-import glob
-import subprocess
-import os.path
-import os
 import bold
-import platform
+from bold import build_path
+import os
+import sys
 
 
-platform_name, _, _ = platform.dist()
-is_debian = platform_name.lower() == 'debian'
+# platform_name, _, _ = platform.dist()
+# is_debian = platform_name.lower() == 'debian'
 
 
-class Builder (bold.Builder):
-	def add_options (self, parser):
-		#~ parser.add_argument('--dev', action='store_true', help="dev build")
-		parser.add_argument('--forcesl', action='store_true', help="force make luajit .so symlinks")
-		parser.add_argument('--build-dir', '-b', dest='build_dir')
+class Luajit (bold.builders.Builder):
+	src_path = 'src/luajit'
+	target = src_path + '/src/libluajit.a'
+	required_by = lambda: Mistress.target
+	sources = lambda self: list(bold.util.get_file_paths_recursive(self.src_path, [self.src_path + '/doc/*']))
 
-builder = Builder()
+	def build (self, _changed_targets, _src_paths):
+		with bold.util.change_cwd(self.src_path):
+			self.shell_run('''make amalg CCDEBUG=" -g" BUILDMODE=" static"''')
+		self._update_target(self.target)
 
+# 		with bold.change_cwd('src/luajit'):
+# 			cmd = "make amalg CCDEBUG=' -g' BUILDMODE=' dynamic' PREFIX={prefix} && make install PREFIX={prefix}".format(prefix = _prefix)
+# 			log.info("running: " + cmd)
+# 			fail = subprocess.call(cmd, shell=True)
 
+# 			subprocess.call(['make', 'clean'])
 
-#build_dir = builder.opts.build_dir or 'build/dev'
-build_dir = 'build/dev'
+# 			if fail:
+# 				sys.exit(1)
 
+# 			if is_debian or builder.opts.forcesl:
+# 				libpath = _prefix + '/lib/libluajit-5.1.so.2.0.0'
+# 				subprocess.check_call("ln -s %s %s/lib/libluajit-5.1.so" % (libpath, _prefix), shell=True)
+# 				subprocess.check_call("ln -s %s %s/lib/libluajit-5.1.so.2" % (libpath, _prefix), shell=True)
+# 			out_fpath = _prefix + '/lib/libluajit-5.1.so'
+# 			assert os.path.isfile(out_fpath) #can fail silently if failed to make symlink
 
-@builder.task
-class ConfigBuilder (object):
-	def build (self, build_dir, clean, dry, log, deps, _targets):
-		log.info("build config.h")
+class Config (bold.builders.Builder):
+	target = build_path + 'config.h'
+	required_by = lambda: Mistress.target
+	sources = 'src/config.h.in'
 
-		out_fp = build_dir + '/config.h'
-		in_fp = 'src/config.h.in'
-		if not dry:
-			with open(in_fp, 'r') as tpl:
-				with open(out_fp, 'w') as out:
-					out.write(tpl.read() % dict(lua_src_path=os.path.abspath('src'), lua_use_luajit=1))
+	def build (self, _changed_targets, _src_paths):
+		with open(self.sources, 'r') as tpl:
+			with open(self.resolve(self.target), 'w') as out:
+				out.write(tpl.read() % dict(lua_src_path=os.path.abspath('src'), lua_use_luajit=1))
+		self._update_target(self.target)
 
-		clean.append(out_fp)
-
-		deps.add(in_fp, out_fp, self)
-		deps.add(out_fp, None, self)
-
-
-_prefix = os.path.abspath(build_dir + '/luajit')
-
-@builder.task
-class LuajitBuilder (object):
-	def build (self, _build_dir, clean, dry, log, deps, _targets):
-		log.info("build luajit")
-
-		with bold.change_cwd('src/luajit'):
-			cmd = "make amalg CCDEBUG=' -g' BUILDMODE=' dynamic' PREFIX={prefix} && make install PREFIX={prefix}".format(prefix = _prefix)
-			log.info("running: " + cmd)
-			fail = subprocess.call(cmd, shell=True)
-
-			subprocess.call(['make', 'clean'])
-
-			if fail:
-				sys.exit(1)
-
-			if is_debian or builder.opts.forcesl:
-				libpath = _prefix + '/lib/libluajit-5.1.so.2.0.0'
-				subprocess.check_call("ln -s %s %s/lib/libluajit-5.1.so" % (libpath, _prefix), shell=True)
-				subprocess.check_call("ln -s %s %s/lib/libluajit-5.1.so.2" % (libpath, _prefix), shell=True)
-			out_fpath = _prefix + '/lib/libluajit-5.1.so'
-			assert os.path.isfile(out_fpath) #can fail silently if failed to make symlink
-
-#		clean.append(out_fpath)
-
-		for fpath in bold.recursive_list_files('src/luajit/', ['src/luajit/doc/*']):
-			deps.add(fpath, out_fpath, self)
-		deps.add(out_fpath, None, self)
-		#its .so so we don't rebuild exe on change
-
-
-@builder.task
-class Mistress (bold.ProgramBuilder):
-	require = [ConfigBuilder, LuajitBuilder]
-
-	target = build_dir + '/mistress'
-
-	_dynsym_fpath = 'dynsym.txt'
-	source = glob.glob('src/*.c') + [_dynsym_fpath]
+class Mistress (bold.builders.CProgram):
+	target = build_path + 'mistress'
+	# _dynsym_fpath = 'dynsym.txt'
+	# sources = 'src/*.c', _dynsym_fpath
+	sources = 'src/*.c'
+	compile_flags = '-O3 -g -std=gnu99' #-Wall
 	includes = [
-		'src/luajit/src',
-		build_dir,
+		Luajit.src_path + '/src',
+		build_path,
 	]
-	flags = '-O3 -g -std=gnu99'
-	exe_flags = '-Wl,--dynamic-list=%s -Wl,-rpath=%s/luajit/lib/' % (_dynsym_fpath, build_dir) #TODO rpath must be absolute?
-	libpaths = [
-		'%s/luajit/lib' % build_dir,
+	# exe_flags = '-Wl,--dynamic-list=%s -Wl,-rpath=%s/luajit/lib/' % (_dynsym_fpath, build_dir) #TODO rpath must be absolute?
+	# link_flags = '-Wl,--dynamic-list=%s' % (_dynsym_fpath,)
+	link_flags = '-Wl,--export-dynamic'
+	lib_paths = [
+		Luajit.src_path + '/src',
+		# '%s/luajit/lib' % build_dir,
 	]
 	libs = [
+		'luajit',
+		'dl', #wtf?
 		'm',
 		'z',
-		'luajit-5.1',
-		#~ 'pthread',
+		# 'luajit-5.1',
+		# 'pthread',
 	]
-
-
-builder.run(build_dir)
