@@ -52,6 +52,7 @@ class Mistress (bold.builders.CProgram):
 	# _dynsym_fpath = 'dynsym.txt'
 	# sources = 'src/*.c', _dynsym_fpath
 	sources = 'src/*.c'
+	deps_include_missing_header = True
 	compile_flags = '-O3 -g -std=gnu99' #-Wall
 	includes = [
 		Luajit.src_path + '/src',
