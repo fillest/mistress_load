@@ -276,6 +276,21 @@ local function run_manager (opts, logger, manager)
 
 	local test_config = assert(dofile(script_path))()
 
+	if opts.logs then
+		local cmd = 'multitail'
+		for i, worker in ipairs(test_config.workers) do
+			local host, port, ssh_port, ssh_user, mistress_path = unpack(worker)
+			cmd = cmd .. ([[ -l 'ssh -p %s %s@%s "tail -F %s/worker%s.log"']]):format(ssh_port or 22, ssh_user or 'f', host, mistress_path or '/home/f/proj/mistress-load', i)
+		end
+		cmd = cmd .. ' -s 2'
+
+		print(cmd)
+
+		io.stderr:write("usage: eval `build/dev/mistress -s yourscript --logs`\n")
+
+		os.exit()
+	end
+
 	if test_config.logging_level then
 		logger:setLevel(test_config.logging_level)
 	end
@@ -293,7 +308,7 @@ local function start ()
 	local opts = utils.getopt(ARGV, 's')
 
 	if opts.h then
-		print "usage: ... <`--worker` or `-s script`>"
+		print "usage: mistress --worker OR -s yourscript [--logs]"
 		os.exit()
 	end
 
