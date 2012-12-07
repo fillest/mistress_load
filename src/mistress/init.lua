@@ -297,7 +297,11 @@ local function start ()
 		os.exit()
 	end
 
-	local logger = logging.console()
+	--https://github.com/Neopallium/lualogging/blob/master/src/logging/console.lua
+	local logger = logging.new(function (self, level, message)
+		io.stderr:write(logging.prepareLogMsg(nil, os.date(), level, message))
+		return true
+	end)
 	logger:setLevel(logging.DEBUG)
 
 	local manager = init_scheduler()
