@@ -187,6 +187,11 @@ function _M.build_req (path, opts)
 	return table.concat(lines, '\r\n') .. '\r\n\r\n' .. (opts.body and opts.body or '')
 end
 
+function _M.make_upload_body (boundary, fname, data)
+	return '--' .. boundary .. '\r\nContent-Type: application/octet-stream; name='..fname..'\r\nContent-Transfer-Encoding: binary\r\n'
+		..'Content-Disposition: form-data; name="'..fname..'"; filename="'..fname..'"\r\n\r\n' .. data .. '\r\n--' .. boundary .. '--\r\n'
+end
+
 
 --http://snippets.luacode.org/snippets/Weighted_random_choice_104
 --[[
