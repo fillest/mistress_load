@@ -2,10 +2,11 @@
 
 ## Feature highlights
 * Scenario scripting in [Lua](http://en.wikipedia.org/wiki/Lua_%28programming_language%29)
-* Live-updated statistics plots viewable through web interaface (via stand-alone statistic server - a separate project); persistent test history
-* HTTP support - keep-alive, chunked, gzip, automatic cookie management, basic-auth
-* Parallel requests from one user (e.g. like browsers do)
-* Record request and generate test scripts with special proxy (a separate project)
+* Live-updated statistic plots viewable through web interaface
+* Persistent test history with project grouping and ACL
+* HTTP support - keep-alive, chunked, gzip, automatic cookie management, basic-auth, file upload
+* Parallel requests from one virtual user (e.g. like browsers act)
+* Special proxy for recording HTTP requests and generating test scripts
 * Scales with cores and nodes
 * Extension system
 * *(planned)* Monitoring integration
@@ -13,7 +14,7 @@
 ## Goals
 * Easy and powerful scenario scripting
 * Accurate informative statistics
-* High-performance
+* High performance
 
 ## Current status
 Under active development but is already working. Stay tuned for docs appearance.
@@ -25,13 +26,13 @@ Under active development but is already working. Stay tuned for docs appearance.
 1. Tests
 
 ## Supported platforms
-Currently I test on Debian and Ubuntu. Mistress should work on other popular Linux distributions, FreeBSD and Mac OS as well, please drop me any feedback (especially if something doesn't work out of the box, or non-platform-optimal event notification mechanism gets used).
+Currently I test on Debian and Ubuntu. Mistress should work on other popular Linux distributions, FreeBSD and Mac OS as well, please drop me any feedback (especially if something doesn't work smoothly, or non-platform-optimal event notification mechanism gets used).
 
 ## Setup
 ### Prepare
     #ubuntu 12.10:
     sudo apt-get install lua-socket lua-json lua-logging
-    #older bedian-based?:
+    #older debian-based?:
     sudo apt-get install liblua5.1-socket2 liblua5.1-json liblua5.1-logging
     
     sudo apt-get install zlib1g-dev
