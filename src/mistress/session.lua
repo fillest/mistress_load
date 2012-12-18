@@ -381,6 +381,7 @@ function _M.Session:http (host, path, opts)
 		receive_timeout = false,
 		headers = {},
 		body = false,
+		upload = false,
 	}, opts)
 
 	local conn, mark_busy, mark_free = self:get_connection(host, opts.remote_port, opts.group_name)
@@ -398,6 +399,7 @@ function _M.Session:http (host, path, opts)
 			referer = opts.referer,
 			headers = opts.headers,
 			body = opts.body,
+			upload = opts.upload,
 		})
 
 		assert(not self:send(conn.fd, req))

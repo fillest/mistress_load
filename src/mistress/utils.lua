@@ -133,9 +133,10 @@ function _M.build_response (status, opts)
 	return table.concat(lines, '\r\n') .. '\r\n\r\n' .. (opts.body and opts.body or '')
 end
 
+local boundary = 'HURRDURRBOUNDARY'
 function _M.build_req (path, opts)
 	opts = _M.merge_defaults({
-		method = "GET",
+		method = false,
 		http_vsn = "1.1",
 		host = false, -- +port?
 		body = false,
@@ -145,10 +146,22 @@ function _M.build_req (path, opts)
 		cookies = false,
 		referer = false,
 		headers = {},
+		upload = false,
 	}, opts)
 
+	local method
+	local body
+	if opts.upload then
+		method = opts.method or 'POST'
+		body = _M.make_upload_body((opts.upload.boundary or boundary), assert(upload.fname), assert(upload.data)
+		assert(opts.body == nil)
+	else
+		method = opts.method or 'GET'
+		body = opts.body or '' 
+	end
+
 	local lines = {
-		opts.method .. " " .. path .. " HTTP/" .. opts.http_vsn,
+		method .. " " .. path .. " HTTP/" .. opts.http_vsn,
 
 		"Connection: " .. (opts.keepalive and "Keep-Alive" or "close"),
 		"Accept-Encoding: gzip, deflate",
@@ -161,6 +174,11 @@ function _M.build_req (path, opts)
 		table.insert(lines, name .. ": " .. value)
 	end
 
+	if opts.upload then
+		assert(opts.headers['Content-Type'] == nil)
+		table.insert(lines, 'Content-Type: multipart/form-data; boundary=' .. (opts.upload.boundary or boundary))
+	end
+
 	if not opts.headers['Accept'] then
 		table.insert(lines, "Accept: */*")
 	end
@@ -169,8 +187,9 @@ function _M.build_req (path, opts)
 	if opts.host then
 		table.insert(lines, "Host: " .. opts.host)
 	end
-	if opts.body then
-		table.insert(lines, "Content-Length: " .. #opts.body)
+	local l = #body
+	if l > 0 then
+		table.insert(lines, "Content-Length: " .. l)
 	end
 	if opts.referer then
 		table.insert(lines, "Referer: " .. opts.referer)
@@ -184,7 +203,7 @@ function _M.build_req (path, opts)
 		table.insert(lines, "Cookie: " .. table.concat(_M.map(make_value, opts.cookies), '; '))
 	end
 
-	return table.concat(lines, '\r\n') .. '\r\n\r\n' .. (opts.body and opts.body or '')
+	return table.concat(lines, '\r\n') .. '\r\n\r\n' .. body
 end
 
 function _M.make_upload_body (boundary, fname, data)
