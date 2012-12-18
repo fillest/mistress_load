@@ -17,7 +17,7 @@ env.linewise = True  #for parallel
 
 @hosts('')
 def pack ():
-	local('tar --exclude="build" --exclude="*.log" --exclude="venv" --exclude="*.pyc" --exclude="bold_db" --exclude-vcs -czf src.tar.gz *')
+	local('tar --exclude="build" --exclude="*.log" --exclude="venv" --exclude="*.pyc" --exclude="*.a" --exclude="*.o" --exclude="bold_db" --exclude-vcs -czf src.tar.gz *')
 
 @parallel
 def upload ():
@@ -30,7 +30,7 @@ def upload ():
 	with cd('~/proj/mistress-load'):  #TODO
 		run('test -f venv/bin/activate || (virtualenv --no-site-packages venv && source venv/bin/activate && pip install --upgrade pip && pip install git+https://github.com/fillest/bold.git && pip install argparse)')
 		with prefix('source venv/bin/activate'):  #TODO
-			run('python build.py')
+			run('bold')
 
 @hosts('')
 def clean ():
