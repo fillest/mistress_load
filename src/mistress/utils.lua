@@ -153,7 +153,7 @@ function _M.build_req (path, opts)
 	local body
 	if opts.upload then
 		method = opts.method or 'POST'
-		body = _M.make_upload_body((opts.upload.boundary or boundary), assert(upload.fname), assert(upload.data)
+		body = _M.make_upload_body((opts.upload.boundary or boundary), assert(upload.fname), assert(upload.data))
 		assert(opts.body == nil)
 	else
 		method = opts.method or 'GET'
