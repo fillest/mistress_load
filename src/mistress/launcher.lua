@@ -85,7 +85,10 @@ function _M.Launcher:send_stats (cur_step)
 		--print("before", #out_data)
 		out_data = mistress.zip(out_data)
 		--print("after", #out_data)
-		assert(not mistress.send(self.stat_server.conn.fd, utils.build_req('/add_stats/' .. self.test_id, {method = 'POST', host = self.stat_server.host, body = out_data})))
+
+		--TODO workaround for multicall-send (maybe need move to separate coro anyway)
+		-- assert(not mistress.send(self.stat_server.conn.fd, utils.build_req('/add_stats/' .. self.test_id, {method = 'POST', host = self.stat_server.host, body = out_data})))
+		assert(not self:send(self.stat_server.conn.fd, utils.build_req('/add_stats/' .. self.test_id, {method = 'POST', host = self.stat_server.host, body = out_data})))
 	end
 end
 
