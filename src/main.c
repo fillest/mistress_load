@@ -21,8 +21,6 @@
 #include <lauxlib.h>
 #include "http_parser.h"
 
-#include "config.h"
-
 
 typedef struct composite_io_watcher {
 	int coroutine_id;
