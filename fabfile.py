@@ -4,15 +4,7 @@ from fabric.operations import put
 from fabric.context_managers import cd, prefix
 
 
-env.hosts = [  #TODO
-	'f@10.40.27.137',
-	#'f@10.40.25.219',
-	# 'f@localhost',
-	#'f@10.40.27.38',
-	#'f@10.40.27.55',
-]
-env.linewise = True  #for parallel
-
+env.linewise = True  #for parallel execution
 
 
 @hosts('')
@@ -21,15 +13,22 @@ def pack ():
 
 @parallel
 def upload ():
+	path = '~/proj/mistress-load'  #TODO hardcode
+
 	put('src.tar.gz', '/tmp')
 	try:
-		run('mkdir -p ~/proj/mistress-load && tar -xf /tmp/src.tar.gz -C ~/proj/mistress-load')  #TODO
+		run('mkdir -p {path} && tar -xf /tmp/src.tar.gz -C {path}'.format(path = path))  
 	finally:
 		run('rm /tmp/src.tar.gz')
 
-	with cd('~/proj/mistress-load'):  #TODO
-		run('test -f venv/bin/activate || (virtualenv --no-site-packages venv && source venv/bin/activate && pip install --upgrade pip && pip install git+https://github.com/fillest/bold.git && pip install argparse)')
-		with prefix('source venv/bin/activate'):  #TODO
+	with cd(path):
+		run('test -f venv/bin/activate'
+			' || (virtualenv --no-site-packages venv'
+			' && source venv/bin/activate'
+			' && pip install --upgrade pip'
+			' && pip install git+https://github.com/fillest/bold.git'
+			' && pip install argparse)')
+		with prefix('source venv/bin/activate'):  #TODO (?)
 			run('bold')
 
 @hosts('')
