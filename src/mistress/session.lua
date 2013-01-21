@@ -157,6 +157,10 @@ function _M.Session:connect (remote_ip, remote_port, opts)
 	}, opts)
 
 	local destroy_composite_io_watcher, close_socket = mistress.connect(self.id, remote_ip, remote_port, opts.local_ip, opts.local_port, opts.timeout)
+	if not destroy_composite_io_watcher then
+		return 0, 'not enough ports'
+	end
+
 
 	self._finalizers[destroy_composite_io_watcher] = true
 

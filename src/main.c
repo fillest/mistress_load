@@ -989,10 +989,14 @@ static int lua_mistress_connect (lua_State *L) {
 	errno = 0;
 	int ret = connect(fd, (struct sockaddr *)&addr_remote, sizeof (struct sockaddr));
 	if (ret == -1 && errno != EINPROGRESS) {
-		perror("connect error");
-		errno = 0;
-		close(fd);
-		exit(EXIT_FAILURE);
+		if (errno == EADDRNOTAVAIL) {
+			close(fd);
+			return 0;
+		} else {
+			perror("connect error");
+			close(fd);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 
