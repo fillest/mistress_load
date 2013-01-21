@@ -944,8 +944,12 @@ static int lua_mistress_connect (lua_State *L) {
 
 
 	int fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (fd < 0) {
-		perror("**socket error at lua_mistress_connect");
+	if (fd == -1) {
+		if (errno == EMFILE) {
+			printf("Failed to create socket: too many open files (EMFILE). This can mean that you've created more sockets than allowed. Check your `ulimit -n`\n");
+		} else {
+			perror("**socket error at lua_mistress_connect");
+		}
 		exit(EXIT_FAILURE);
 	}
 
