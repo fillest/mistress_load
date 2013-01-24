@@ -2,16 +2,22 @@ import bold
 from bold import build_path
 import os
 import sys
+import shutil
 
 
 class Luajit (bold.builders.Builder):
-	src_path = 'src/luajit'
-	target = src_path + '/src/libluajit.a'
 	required_by = lambda: Mistress.target
+	
+	src_path = 'src/luajit'
+	src_copy_path = build_path + 'luajit_src'
+	target = src_copy_path + '/src/libluajit.a'
 	sources = lambda self: list(bold.util.get_file_paths_recursive(self.src_path, [self.src_path + '/doc/*']))
 
 	def build (self, _changed_targets, _src_paths):
-		with bold.util.change_cwd(self.src_path):
+		shutil.rmtree(self.resolve(self.src_copy_path), ignore_errors = True)
+		shutil.copytree(self.src_path, self.resolve(self.src_copy_path))
+
+		with bold.util.change_cwd(self.resolve(self.src_copy_path)):
 			self.shell_run('''make amalg CCDEBUG=" -g" BUILDMODE=" static"''')
 		self._update_target(self.target)
 
@@ -28,14 +34,14 @@ class Mistress (bold.builders.CProgram):
 	# link_flags = '-Wl,--dynamic-list=%s' % (_dynsym_fpath,)
 	link_flags = '-Wl,--export-dynamic'
 	lib_paths = [
-		Luajit.src_path + '/src',
+		Luajit.src_copy_path + '/src',
 		# '%s/luajit/lib' % build_dir,
 	]
 	libs = [
 		# 'pthread',
 		# 'luajit-5.1',
 		'luajit',
-		'dl', #wtf?
+		'dl',
 		'm',
 		'z',
 	]
