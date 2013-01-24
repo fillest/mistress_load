@@ -17,7 +17,7 @@ def upload ():
 
 	put('src.tar.gz', '/tmp')
 	try:
-		run('mkdir -p {path} && tar -xf /tmp/src.tar.gz -C {path}'.format(path = path))  
+		run('rm -rf {path}/src && mkdir -p {path} && tar -xf /tmp/src.tar.gz -C {path}'.format(path = path))  
 	finally:
 		run('rm /tmp/src.tar.gz')
 
