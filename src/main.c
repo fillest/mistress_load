@@ -960,7 +960,11 @@ static int lua_mistress_connect (lua_State *L) {
 	set_sock_opt(fd, SOL_SOCKET, SO_REUSEADDR, 1);
 	set_sock_opt(fd, SOL_SOCKET, SO_KEEPALIVE, 0);
 
-	//SO_RCVBUF
+	// int size = 1024 * 500; //cat /proc/sys/net/core/rmem_default //212992
+	// if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)) == -1) {
+	// 	perror("Error setting SO_RCVBUF");
+	// 	exit(EXIT_FAILURE);
+	// }
 	//SO_SNDBUF
 
 	// bind a socket to a device name (might not work on all systems):
@@ -969,20 +973,20 @@ static int lua_mistress_connect (lua_State *L) {
 
 
 	struct sockaddr_in addr_local;
-    memset(&addr_local, 0, sizeof (struct sockaddr_in));
-    addr_local.sin_family = AF_INET;
-    addr_local.sin_port = htons(local_port);
-    addr_local.sin_addr.s_addr = inet_addr(local_addr);
-    if (bind(fd, (struct sockaddr *)&addr_local, sizeof (struct sockaddr)) == -1) {
+	memset(&addr_local, 0, sizeof (struct sockaddr_in));
+	addr_local.sin_family = AF_INET;
+	addr_local.sin_port = htons(local_port);
+	addr_local.sin_addr.s_addr = inet_addr(local_addr);
+	if (bind(fd, (struct sockaddr *)&addr_local, sizeof (struct sockaddr)) == -1) {
 		perror("bind error");
 		exit(EXIT_FAILURE);
 	}
 
 	struct sockaddr_in addr_remote;
-    memset(&addr_remote, 0, sizeof (struct sockaddr_in));
-    addr_remote.sin_family = AF_INET;
-    addr_remote.sin_port = htons(remote_port);
-    addr_remote.sin_addr.s_addr = inet_addr(remote_addr);
+	memset(&addr_remote, 0, sizeof (struct sockaddr_in));
+	addr_remote.sin_family = AF_INET;
+	addr_remote.sin_port = htons(remote_port);
+	addr_remote.sin_addr.s_addr = inet_addr(remote_addr);
 
 
 
