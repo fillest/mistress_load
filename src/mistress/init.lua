@@ -144,7 +144,7 @@ function WorkersManager:run ()
 
 		ssh_port = ssh_port or 22
 		ssh_user = ssh_user and (ssh_user .. "@") or ""
-		mistress_path = mistress_path or "/home/f/proj/mistress-load"
+		mistress_path = mistress_path or "~/proj/mistress-load"
 
 		local cmd = sub([[ssh -p ]]..ssh_port.." "..ssh_user..[[${host} -o "PasswordAuthentication no" -o "StrictHostKeyChecking no" 'screen -S mistress_worker${node_id} -d -m bash -c ]]
 			..[["cd ]]..mistress_path..[[ && ]]
