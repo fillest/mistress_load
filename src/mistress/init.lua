@@ -115,7 +115,7 @@ end
 
 function WorkersManager:register_test (worker_num, delayed_start_time, project_id, write_connect_error_log)
 	if not self._no_stat_server then
-		self.logger:info("registering test")
+		self.logger:debug("registering test")
 
 		assert(not mistress.send(self.stat_server.conn.fd, utils.build_req(
 			('/new_test?worker_num='..worker_num
@@ -140,7 +140,7 @@ function WorkersManager:run ()
 	self:connect_to_stat_server()
 
 
-	self.logger:info('starting workers')
+	self.logger:debug('starting workers')
 	local t_start = os.time()
 	for i, worker in ipairs(self._workers) do
 		local host, port, ssh_port, ssh_user, mistress_path = unpack(worker)
@@ -164,7 +164,7 @@ function WorkersManager:run ()
 		end
 	end
 	self:sleep(3) --TODO properly wait workers to start
-	self.logger:info('all workers were started(hopefully) in ' .. os.difftime(os.time(), t_start) .. ' seconds')
+	self.logger:debug('all workers were started(hopefully) in ' .. os.difftime(os.time(), t_start) .. ' seconds')
 
 
 	local delayed_start_time = mistress.now() + self._start_delay
@@ -211,8 +211,7 @@ function WorkersManager:run ()
 				end
 				assert(status_code == 200, 'status_code = '..status_code)
 
-
-				self.logger:info("waiting worker to finish")
+				self.logger:info("waiting worker " .. host .. ":" .. port .. " to finish")
 				local _headers, body, _, status_code, _ = _self:receive(conn.fd, true, 0)
 				if not _headers then
 					error(body)

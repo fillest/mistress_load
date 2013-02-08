@@ -61,7 +61,7 @@ end
 --copypasted to worker manager
 function _M.Launcher:connect_to_stat_server ()
 	if not self._no_stat_server then
-		self.logger:info("connecting to stat server " .. self.stat_server.host .. ":" .. self.stat_server.port)
+		self.logger:debug("connecting to stat server " .. self.stat_server.host .. ":" .. self.stat_server.port)
 
 		local conn, err = self:connect(utils.resolve_host(self.stat_server.host), self.stat_server.port, {timeout = 40})
 		if not (conn == 0) then
