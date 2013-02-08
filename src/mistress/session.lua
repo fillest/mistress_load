@@ -264,7 +264,11 @@ function _M.Session:get_connection (host, remote_port, group_name, opts)
 				else
 					err = 'timeout'
 				end
-				self.stat:add(stat.stypes.CONNECT_ERROR, group_name .. ': ' .. err)
+				self.stat:add(stat.stypes.CONNECT_ERROR, {
+					msg = group_name .. ': ' .. err,
+					ip = ip,
+					time = mistress.now(),
+				})
 
 				return nil
 			end

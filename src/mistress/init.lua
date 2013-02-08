@@ -82,6 +82,7 @@ function WorkersManager:init (cfg, script, ...)
 		--node_id = false,
 		start_delay = 8,
 		project_id = false,
+		write_connect_error_log = false,
 	}, self._cfg.opts)
 
 	self._workers = self._cfg.workers
@@ -112,14 +113,16 @@ function WorkersManager:connect_to_stat_server ()
 	end
 end
 
-function WorkersManager:register_test (worker_num, delayed_start_time, project_id)
+function WorkersManager:register_test (worker_num, delayed_start_time, project_id, write_connect_error_log)
 	if not self._no_stat_server then
 		self.logger:info("registering test")
 
 		assert(not mistress.send(self.stat_server.conn.fd, utils.build_req(
-			'/new_test?worker_num='..worker_num
-			..'&delayed_start_time='..delayed_start_time
-			..'&project_id='..project_id,
+			('/new_test?worker_num='..worker_num
+				..'&delayed_start_time='..delayed_start_time
+				..'&project_id='..project_id
+				..(write_connect_error_log and '&write_connect_error_log=1' or '')
+			),
 			{method = 'POST', host = self.stat_server.host, body = self._script}
 		))) --TODO host+port
 		local _headers, body, _, status_code, _ = self:receive(self.stat_server.conn.fd)
@@ -165,7 +168,7 @@ function WorkersManager:run ()
 
 
 	local delayed_start_time = mistress.now() + self._start_delay
-	self:register_test(#self._workers, delayed_start_time, self._cfg.opts.project_id)
+	self:register_test(#self._workers, delayed_start_time, self._cfg.opts.project_id, self._cfg.opts.write_connect_error_log)
 
 	local workers_left = #self._workers
 	local function on_worker_finished ()
