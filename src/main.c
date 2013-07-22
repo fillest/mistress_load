@@ -972,15 +972,15 @@ static int lua_mistress_connect (lua_State *L) {
 	//setsockopt(s2, SOL_SOCKET, SO_BINDTODEVICE, optval2, 4);
 
 
-	struct sockaddr_in addr_local;
-	memset(&addr_local, 0, sizeof (struct sockaddr_in));
-	addr_local.sin_family = AF_INET;
-	addr_local.sin_port = htons(local_port);
-	addr_local.sin_addr.s_addr = inet_addr(local_addr);
-	if (bind(fd, (struct sockaddr *)&addr_local, sizeof (struct sockaddr)) == -1) {
-		perror("bind error");
-		exit(EXIT_FAILURE);
-	}
+	// struct sockaddr_in addr_local;
+	// memset(&addr_local, 0, sizeof (struct sockaddr_in));
+	// addr_local.sin_family = AF_INET;
+	// addr_local.sin_port = htons(local_port);
+	// addr_local.sin_addr.s_addr = inet_addr(local_addr);
+	// if (bind(fd, (struct sockaddr *)&addr_local, sizeof (struct sockaddr)) == -1) {
+	// 	perror("bind error");
+	// 	exit(EXIT_FAILURE);
+	// }
 
 	struct sockaddr_in addr_remote;
 	memset(&addr_remote, 0, sizeof (struct sockaddr_in));
