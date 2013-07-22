@@ -214,7 +214,7 @@ function WorkersManager:run ()
 				self.logger:info("waiting worker " .. host .. ":" .. port .. " to finish")
 				local _headers, body, _, status_code, _ = _self:receive(conn.fd, true, 0)
 				if not _headers then
-					error(body)
+					error("error while receiving from worker " .. host .. ":" .. port .. ": " .. body)
 				end
 				assert(status_code == 200, 'status_code = '..status_code)
 				assert(body == 'finished')
