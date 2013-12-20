@@ -390,6 +390,7 @@ function _M.Session:http (host, path, opts)
 		headers = {},
 		body = false,
 		upload = false,
+		cookies = false,
 	}, opts)
 
 	local conn, mark_busy, mark_free = self:get_connection(host, opts.remote_port, opts.group_name)
@@ -397,6 +398,12 @@ function _M.Session:http (host, path, opts)
 		mark_busy()
 
 		local cookies = self._cookies:get_by(host, path)
+
+		if opts.cookies then
+			for i = 1, #opts.cookies do
+				cookies[#cookies + 1] = opts.cookies[i]
+			end
+		end
 
 		local req = utils.build_req(path, {
 			method = opts.method,
