@@ -391,6 +391,7 @@ function _M.Session:http (host, path, opts)
 		body = false,
 		upload = false,
 		cookies = false,
+		remap_status = false,
 	}, opts)
 
 	local conn, mark_busy, mark_free = self:get_connection(host, opts.remote_port, opts.group_name)
@@ -432,6 +433,10 @@ function _M.Session:http (host, path, opts)
 			--~ print("**is_keepalive", is_keepalive)
 			--~ print("**body " .. body)
 			--~ print("**body", "{{" .. string.sub(body, 1, 50) .. " <...> " .. string.sub(body, -50) .. "}}")
+
+			if opts.remap_status then
+				status_code = opts.remap_status[status_code] or status_code
+			end
 
 			self.stat:add(stat.stypes.RESPONSE_TIME, {opts.group_name, passed})
 			self.stat:add(stat.stypes.RESPONSE_STATUS, {opts.group_name, status_code})
