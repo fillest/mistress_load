@@ -46,7 +46,7 @@ Currently I test on Debian and Ubuntu. Mistress should work on other popular Lin
     virtualenv --no-site-packages venv
     source venv/bin/activate
     pip install --upgrade pip  #debian?
-    pip install git+https://github.com/fillest/bold.git
+    pip install bold==0.3
     pip install argparse #for debian
     
     bold
