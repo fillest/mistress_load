@@ -238,7 +238,14 @@ static int hp_message_begin_cb (http_parser *parser) {
 	//~ printf("**hp_message_begin_cb\n");
 
 	lua_pushliteral(lua_state, "headers");  // 1
-	lua_createtable(lua_state, 2 * 8, 0);  // 2  //prealloc for some header name-value pairs
+
+	//TODO buggy, sometimes i get table with preappended nils
+	//or not? got after changing to lua_newtable --
+	// <1>{ nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Server", "nginx/1.4.3", "Date", "Thu, 14 Nov 2013 18:11:02 GMT", "Content-Type", "text/plain", "Content-Length", "162", "Last-Modified", "Wed, 13 Nov 2013 22:03:44 GMT", "Connection", "keep-alive", "ETag", '"5283f740-a2"', "Accept-Ranges", "bytes" }
+	// ****    /home/f/proj/mistress-load/src/mistress/session.lua:295: key == nil
+	// lua_createtable(lua_state, 2 * 8, 0);  // 2  //prealloc for some header name-value pairs   
+	
+	lua_newtable(lua_state);
 
     return 0;
 }
