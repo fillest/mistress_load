@@ -415,7 +415,7 @@ static void cb_recv (EV_P_ ev_io *w, int revents) {
 		//size_t recved = got;
 		size_t nparsed = http_parser_execute(&(watcher->parser), &(watcher->parser_settings), buffer, got);
 		//printf("**nparsed: %d\n", nparsed);
-		free(buffer);
+		
 		//parser->flags |= F_CHUNKED
 		//parser->content_length
 
@@ -442,6 +442,8 @@ static void cb_recv (EV_P_ ev_io *w, int revents) {
 			//~ exit(EXIT_FAILURE);
 		}
 	}
+
+	free(buffer);
 
 	int res_num = 0;
 	if (lua_pcall(lua_state, arg_num, res_num, 0)) {
