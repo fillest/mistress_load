@@ -271,6 +271,8 @@ static int hp_header_field_cb (http_parser *parser, const char *at, size_t lengt
 	lua_pushlstring(lua_state, at, length);
 	lua_rawseti(lua_state, -2, ++(watcher->headers_table_index));
 
+	// printf("%.*s\n", length, at);
+
     return 0;
 }
 static int hp_header_value_cb (http_parser *parser, const char *at, size_t length) {
@@ -433,10 +435,10 @@ static void cb_recv (EV_P_ ev_io *w, int revents) {
 			lua_pushlstring(lua_state, buffer, got);
 			lua_rawset(lua_state, -3);
 
-			//~ FILE *fp = fopen("packet_dump.bin", "wb");
-			//~ fwrite(buffer, 1, got, fp);
-			//~ fclose(fp);
-			//~ printf("**dumped to ./packet_dump.bin\n");
+			// FILE *fp = fopen("packet_dump.bin", "wb");
+			// fwrite(buffer, 1, got, fp);
+			// fclose(fp);
+			// printf("**dumped to ./packet_dump.bin\n");
 //~
 			//~ printf("**recved %zd b, buf:\n%s\n", got, buffer);
 			//~ exit(EXIT_FAILURE);
