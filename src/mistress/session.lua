@@ -72,7 +72,7 @@ function _M.Session:init (id, logger, stat, manager)
 	end)
 end
 
-function _M.Session:receive (fd, do_fetch_body, timeout, is_req)
+function _M.Session:receive (fd, do_fetch_body, timeout, is_req, path)
 	if do_fetch_body == nil then
 		do_fetch_body = true
 	end
@@ -99,6 +99,7 @@ function _M.Session:receive (fd, do_fetch_body, timeout, is_req)
 		end
 
 		if not res then
+			-- print("not res", path)
 			--~ print(self.id, inspect(utils.map(function (t) return t[0] end, self.manager.active_sessions)))
 			destroy_recv_watcher()
 			self._finalizers[destroy_recv_watcher] = nil
@@ -106,12 +107,16 @@ function _M.Session:receive (fd, do_fetch_body, timeout, is_req)
 			return false, er
 		end
 
+		-- print(res.parse_failed)
+
 		if res.closed then
 			return false, "conn closed"
 		end
 
 		if res.parse_failed then
-			local f = assert(io.open("packet_dump " .. os.date() .. "#" .. self.id .. ".bin", 'wb'))
+			local fname = "packet_dump " .. os.date() .. "#" .. self.id .. ".bin"
+			print(fname, path)
+			local f = assert(io.open(fname, 'wb'))
 			f:write(res.body)
 			f:flush()
 			f:close()
@@ -190,6 +195,7 @@ function _M.Session:connect (remote_ip, remote_port, opts)
 	destroy_composite_io_watcher()
 	self._finalizers[destroy_composite_io_watcher] = nil
 
+	-- assert(type(fd) == 'number' or fd == false, inspect(fd))
 	conn.fd = fd
 
 	--~ local close = function ()
@@ -237,6 +243,7 @@ function _M.Session:get_connection (host, remote_port, group_name, opts)
 				if self.on_connect then self.on_connect() end
 
 				local fd = c.fd
+				-- assert(type(fd) == 'number', inspect(fd))
 				c:add_finalizer(function ()
 					--~ print("get_connection -- close() " .. self.id)
 					free[fd] = nil
@@ -283,6 +290,10 @@ local function parse_headers (headers_tokens)
 	local headers = {}
 	for i = 1, #headers_tokens, 2 do
 		local key = headers_tokens[i]
+		if key == nil then
+			print(inspect(headers_tokens))
+			error('key == nil')
+		end
 		local value = headers_tokens[i + 1]
 
 		local existing_value = headers[key]
@@ -348,6 +359,7 @@ end
 function _M.Session:send (fd, data)
 	local pos = 0
 	repeat
+		-- if type(fd) ~= 'number' then print(inspect(fd)) end
 		local errno, sent_len, destroy_watcher = mistress.send(fd, data, self.id, pos)
 		if errno then
 			if errno == 0 then
@@ -423,7 +435,7 @@ function _M.Session:http (host, path, opts)
 
 		local keepalive = opts.keepalive
 		local res = nil
-		local headers_tokens, body, passed, status_code, is_keepalive = self:receive(conn.fd, opts.fetch_body, receive_timeout)
+		local headers_tokens, body, passed, status_code, is_keepalive = self:receive(conn.fd, opts.fetch_body, receive_timeout, nil, path)
 		--~ print('*****', host, path, "RECV")
 		local headers
 		if headers_tokens then
