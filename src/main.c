@@ -534,6 +534,7 @@ static int lua_mistress_receive (lua_State *L) {
 		watcher->parser_settings.on_body = hp_stub_cb;
 	}
 	watcher->parser_settings.on_message_complete = hp_message_complete_cb;
+	watcher->parser_settings.on_status = hp_stub_cb;
 
 
 	int ret_num = 0;
