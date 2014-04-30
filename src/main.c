@@ -235,7 +235,9 @@ int lua_register_resume_active_sessions (lua_State *L) {
 
 
 static int hp_message_begin_cb (http_parser *parser) {
-	//~ printf("**hp_message_begin_cb\n");
+	// printf("**hp_message_begin_cb\n");
+
+	// Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
 
 	lua_pushliteral(lua_state, "headers");  // 1
 
@@ -247,10 +249,15 @@ static int hp_message_begin_cb (http_parser *parser) {
 	
 	lua_newtable(lua_state);
 
+	// (*(int*)parser->data)++;
+	// (*(int*)parser->data)++;
+
+	// lua_stack_dump(lua_state);
+
     return 0;
 }
 static int hp_url_cb (http_parser *parser, const char *at, size_t length) {
-	//~ printf("**hp_url_cb\n");
+	// printf("**hp_url_cb\n");
 	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
 
 	lua_pushliteral(lua_state, "url");
@@ -265,7 +272,7 @@ static int hp_url_cb (http_parser *parser, const char *at, size_t length) {
 }
 
 static int hp_header_field_cb (http_parser *parser, const char *at, size_t length) {
-	//~ printf("**hp_header_field_cb\n");
+	// printf("**hp_header_field_cb\n");
 	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
 
 	lua_pushlstring(lua_state, at, length);
@@ -276,7 +283,7 @@ static int hp_header_field_cb (http_parser *parser, const char *at, size_t lengt
     return 0;
 }
 static int hp_header_value_cb (http_parser *parser, const char *at, size_t length) {
-	//~ printf("**hp_header_value_cb\n");
+	// printf("**hp_header_value_cb\n");
 	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
 
 	if (memcmp(at, "gzip\r", strlen("gzip\r")) == 0) { //TODO not safe //TODO !!!!!!!!!!!!! \r (Accept-Encoding vs Content-Encoding ...)
@@ -289,10 +296,13 @@ static int hp_header_value_cb (http_parser *parser, const char *at, size_t lengt
 
 	lua_rawseti(lua_state, -2, ++(watcher->headers_table_index));
 
+	// lua_stack_dump(lua_state);
+
     return 0;
 }
 static int hp_headers_complete_cb (http_parser *parser) {
-	//~ printf("**hp_headers_complete_cb\n");
+	// lua_stack_dump(lua_state);
+	// printf("**hp_headers_complete_cb\n");
 	lua_rawset(lua_state, -3);  //"headers", result
 
 	lua_pushliteral(lua_state, "is_keepalive");
@@ -303,6 +313,9 @@ static int hp_headers_complete_cb (http_parser *parser) {
 	lua_pushinteger(lua_state, parser->status_code);
 	lua_rawset(lua_state, -3);
 
+
+	// lua_stack_dump(lua_state);
+
     return 0;
 }
 
@@ -310,7 +323,7 @@ static int hp_headers_complete_cb (http_parser *parser) {
 //~ #define CHUNK 80 * 1024
 #define CHUNK 16384
 static int hp_body_cb (http_parser *parser, const char *at, size_t length) {
-	//~ printf("  **hp_body_cb len=%d\n", length);
+	// printf("**hp_body_cb len=%d\n", length);
 	//Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
 
 	lua_pushliteral(lua_state, "body");
@@ -322,6 +335,7 @@ static int hp_body_cb (http_parser *parser, const char *at, size_t length) {
 		lua_pushliteral(lua_state, "body");
 
 		lua_pushlstring(lua_state, at, length);
+		// printf("qwe: %s\n", lua_tostring(lua_state, -1));
 
 		lua_rawset(lua_state, -3);
 	} else {
@@ -329,6 +343,7 @@ static int hp_body_cb (http_parser *parser, const char *at, size_t length) {
 		lua_concat(lua_state, 2);
 
 		lua_pushliteral(lua_state, "body");
+		// printf("qwe: %s\n", lua_tostring(lua_state, -1));
 		lua_insert(lua_state, -2); //swap
 
 		lua_rawset(lua_state, -3);
@@ -338,11 +353,12 @@ static int hp_body_cb (http_parser *parser, const char *at, size_t length) {
 }
 
 static int hp_stub_cb (http_parser *parser, const char *at, size_t length) {
+	// printf("**hp_stub_cb\n");
 	return 0;
 }
 
 static int hp_message_complete_cb (http_parser *parser) {
-	//~ printf("**hp_message_complete_cb\n");
+	// printf("**hp_message_complete_cb\n");
 
 	lua_pushliteral(lua_state, "is_done");
 	lua_pushboolean(lua_state, 1);
@@ -398,7 +414,7 @@ static void cb_recv (EV_P_ ev_io *w, int revents) {
 		lua_pushboolean(lua_state, 1);
 		lua_rawset(lua_state, -3);
 	} else {
-		//~ printf("**recved %i b, buf:\n%s\n", got, buffer);
+		// printf("**recved %i b, buf:\n%s\n", got, buffer);
 		//~ printf("**recved %d b\n", got);
 
 		// result
@@ -410,13 +426,13 @@ static void cb_recv (EV_P_ ev_io *w, int revents) {
 		lua_pushnumber(lua_state, passed);
 		lua_rawset(lua_state, -3);
 
-		//watcher->parser.data = (void *)&arg_num;
+		// watcher->parser.data = (void *)&arg_num;
 
 
 		//size_t recved = 0;
 		//size_t recved = got;
 		size_t nparsed = http_parser_execute(&(watcher->parser), &(watcher->parser_settings), buffer, got);
-		//printf("**nparsed: %d\n", nparsed);
+		// printf("**nparsed: %d\n", nparsed);
 		
 		//parser->flags |= F_CHUNKED
 		//parser->content_length
@@ -447,9 +463,14 @@ static void cb_recv (EV_P_ ev_io *w, int revents) {
 
 	free(buffer);
 
+// lua_stack_dump(lua_state);
+	// printf("arg_num %i\n", arg_num);
 	int res_num = 0;
 	if (lua_pcall(lua_state, arg_num, res_num, 0)) {
+		
+		// lua_stack_dump(lua_state);
 		printf("%s: failed to call plan_resume(): %s\n", __FUNCTION__, lua_tostring(lua_state, -1));
+		// lua_stack_dump(lua_state);
 		exit(EXIT_FAILURE);
 	}
 }

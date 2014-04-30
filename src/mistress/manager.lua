@@ -32,7 +32,7 @@ function _M.Manager:plan_resume (from, id, ...)  --TODO rename enqueue_awake?
 	--~ end
 	--print(...)
 	--~ table.insert(self.sessions[id].__resm, {from, debug.traceback()})
-	--~ print("plan", from, id)
+	-- print("plan", from, id)
 
 
 	if self.active_sessions_ids[id] == nil then
