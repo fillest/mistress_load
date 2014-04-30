@@ -332,7 +332,7 @@ function _M.Session:handle_cookies (raw_cookies, host, path)
 				assert(not v:match('^"[^"]+"$'))  --TODO handle quotes
 				cookie.value = v
 			else
-				if k == 'path' then
+				if k == 'path' or k == 'Path' then
 					cookie.path = v
 				elseif k == 'expires' then
 					cookie.expires = cookies.expires_to_timestamp(v)
