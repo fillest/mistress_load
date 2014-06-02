@@ -150,6 +150,8 @@ function WorkersManager:run ()
 		mistress_path = mistress_path or "~/proj/mistress-load"
 		if pkey_path then
 			pkey_path = "-i " .. pkey_path
+		else
+			pkey_path = ""
 		end
 
 		local cmd = sub("ssh " .. pkey_path .. " -p "..ssh_port.." "..ssh_user
