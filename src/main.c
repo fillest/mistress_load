@@ -236,35 +236,32 @@ int lua_register_resume_active_sessions (lua_State *L) {
 
 
 static int hp_message_begin_cb (http_parser *parser) {
-	// printf("**hp_message_begin_cb\n");
-
 	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
 
-	lua_pushliteral(lua_state, "headers");  // 1
+	if (! watcher->got_response) { //TODO !!!! proper handling
+		lua_pushliteral(lua_state, "headers");  // 1
 
-	//TODO buggy, sometimes i get table with preappended nils
-	//or not? got after changing to lua_newtable --
-	// <1>{ nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Server", "nginx/1.4.3", "Date", "Thu, 14 Nov 2013 18:11:02 GMT", "Content-Type", "text/plain", "Content-Length", "162", "Last-Modified", "Wed, 13 Nov 2013 22:03:44 GMT", "Connection", "keep-alive", "ETag", '"5283f740-a2"', "Accept-Ranges", "bytes" }
-	// ****    /home/f/proj/mistress-load/src/mistress/session.lua:295: key == nil
-	// lua_createtable(lua_state, 2 * 8, 0);  // 2  //prealloc for some header name-value pairs   
-	
-	lua_newtable(lua_state);
+		//TODO buggy, sometimes i get table with preappended nils
+		//or not? got after changing to lua_newtable --
+		// <1>{ nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "Server", "nginx/1.4.3", "Date", "Thu, 14 Nov 2013 18:11:02 GMT", "Content-Type", "text/plain", "Content-Length", "162", "Last-Modified", "Wed, 13 Nov 2013 22:03:44 GMT", "Connection", "keep-alive", "ETag", '"5283f740-a2"', "Accept-Ranges", "bytes" }
+		// ****    /home/f/proj/mistress-load/src/mistress/session.lua:295: key == nil
+		// lua_createtable(lua_state, 2 * 8, 0);  // 2  //prealloc for some header name-value pairs   
+		
+		lua_newtable(lua_state);
 
-	// lua_stack_dump(lua_state);
-
-	if (watcher->got_response) {
-		printf("%s: parsed unexpected new response beginning (a response has been parsed already)\n", __FUNCTION__);
-		// e.g. look for "upstream sent more data than specified in "Content-Length" header while reading upstream" in nginx error log
-		exit(EXIT_FAILURE);
-	} else {
-		watcher->got_response = true;
+		// lua_stack_dump(lua_state);
 	}
 
     return 0;
 }
+
 static int hp_url_cb (http_parser *parser, const char *at, size_t length) {
-	// printf("**hp_url_cb\n");
-	// Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
+	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
+
+	if (watcher->got_response) {
+		printf("%s: parsed unexpected new response (a response has been parsed already)\n", __FUNCTION__);
+		exit(EXIT_FAILURE);
+	}
 
 	lua_pushliteral(lua_state, "url");
 	lua_pushlstring(lua_state, at, length);
@@ -278,8 +275,12 @@ static int hp_url_cb (http_parser *parser, const char *at, size_t length) {
 }
 
 static int hp_header_field_cb (http_parser *parser, const char *at, size_t length) {
-	// printf("**hp_header_field_cb\n");
 	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
+
+	if (watcher->got_response) {
+		printf("%s: parsed unexpected new response (a response has been parsed already)\n", __FUNCTION__);
+		exit(EXIT_FAILURE);
+	}
 
 	lua_pushlstring(lua_state, at, length);
 	lua_rawseti(lua_state, -2, ++(watcher->headers_table_index));
@@ -289,8 +290,12 @@ static int hp_header_field_cb (http_parser *parser, const char *at, size_t lengt
     return 0;
 }
 static int hp_header_value_cb (http_parser *parser, const char *at, size_t length) {
-	// printf("**hp_header_value_cb\n");
 	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
+
+	if (watcher->got_response) {
+		printf("%s: parsed unexpected new response (a response has been parsed already)\n", __FUNCTION__);
+		exit(EXIT_FAILURE);
+	}
 
 	if (memcmp(at, "gzip\r", strlen("gzip\r")) == 0) { //TODO not safe //TODO !!!!!!!!!!!!! \r (Accept-Encoding vs Content-Encoding ...)
 		//printf("** is gzipped\n");
@@ -307,7 +312,13 @@ static int hp_header_value_cb (http_parser *parser, const char *at, size_t lengt
     return 0;
 }
 static int hp_headers_complete_cb (http_parser *parser) {
-	// printf("**hp_headers_complete_cb\n");
+	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
+
+	if (watcher->got_response) {
+		printf("%s: parsed unexpected new response (a response has been parsed already)\n", __FUNCTION__);
+		exit(EXIT_FAILURE);
+	}
+
 	lua_rawset(lua_state, -3);  //"headers", result
 
 	lua_pushliteral(lua_state, "is_keepalive");
@@ -325,7 +336,12 @@ static int hp_headers_complete_cb (http_parser *parser) {
 //~ #define CHUNK 80 * 1024
 #define CHUNK 16384
 static int hp_body_cb (http_parser *parser, const char *at, size_t length) {
-	// printf("**hp_body_cb len=%d\n", length);
+	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
+
+	if (watcher->got_response) {
+		printf("%s: parsed unexpected new response (a response has been parsed already)\n", __FUNCTION__);
+		exit(EXIT_FAILURE);
+	}
 
 	lua_pushliteral(lua_state, "body");
 
@@ -354,12 +370,13 @@ static int hp_body_cb (http_parser *parser, const char *at, size_t length) {
 }
 
 static int hp_stub_cb (http_parser *parser, const char *at, size_t length) {
-	// printf("**hp_stub_cb\n");
 	return 0;
 }
 
 static int hp_message_complete_cb (http_parser *parser) {
-	// printf("**hp_message_complete_cb\n");
+	Recv_watcher *watcher = (Recv_watcher *)(((char *)parser) - offsetof (Recv_watcher, parser));
+
+	watcher->got_response = true;
 
 	lua_pushliteral(lua_state, "is_done");
 	lua_pushboolean(lua_state, 1);
@@ -371,7 +388,6 @@ static int hp_message_complete_cb (http_parser *parser) {
 
 static void cb_recv (EV_P_ ev_io *w, int revents) {
 	Recv_watcher *watcher = (Recv_watcher *)(((char *)w) - offsetof (Recv_watcher, cio_watcher.io_watcher));
-	//printf("**cb_recv fd %d\n", watcher->cio_watcher.io_watcher.fd);
 
 	lua_getfield(lua_state, LUA_REGISTRYINDEX, "plan_resume");
 	int arg_num = 0;
@@ -427,6 +443,7 @@ static void cb_recv (EV_P_ ev_io *w, int revents) {
 		lua_pushnumber(lua_state, passed);
 		lua_rawset(lua_state, -3);
 
+		watcher->got_response = false;
 
 		//size_t recved = 0;
 		//size_t recved = got;
@@ -538,7 +555,6 @@ static int lua_mistress_receive (lua_State *L) {
 
 
 	http_parser_init(&(watcher->parser), is_req ? HTTP_REQUEST : HTTP_RESPONSE);
-	watcher->got_response = false;
 	watcher->parser_settings.on_message_begin = hp_message_begin_cb;
 	watcher->parser_settings.on_url = hp_url_cb;
 	watcher->parser_settings.on_header_field = hp_header_field_cb;
