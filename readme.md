@@ -31,9 +31,9 @@ Currently I test on Debian and Ubuntu. Mistress should work on other popular Lin
 ## Setup
 ### Prepare
     #ubuntu:
-    sudo apt-get install lua-socket lua-json lua-logging
+    sudo apt-get install lua-socket lua-logging
     #older debian-based:
-    sudo apt-get install liblua5.1-socket2 liblua5.1-json liblua5.1-logging
+    sudo apt-get install liblua5.1-socket2 liblua5.1-logging
     
     sudo apt-get install zlib1g-dev screen
 
