@@ -147,7 +147,7 @@ function WorkersManager:run ()
 
 		ssh_port = ssh_port or 22
 		ssh_user = ssh_user and (ssh_user .. "@") or ""
-		mistress_path = mistress_path or "~/proj/mistress-load"
+		mistress_path = mistress_path or "~/proj/mistress_load"
 		if pkey_path then
 			pkey_path = "-i " .. pkey_path
 		else
@@ -288,7 +288,7 @@ local function run_manager (opts, logger, manager)
 		local cmd = 'multitail'
 		for i, worker in ipairs(test_config.workers) do
 			local host, port, ssh_port, ssh_user, mistress_path = unpack(worker)
-			cmd = cmd .. ([[ -l 'ssh -p %s %s@%s "tail -F %s/worker%s.log"']]):format(ssh_port or 22, ssh_user or 'f', host, mistress_path or '/home/f/proj/mistress-load', i)
+			cmd = cmd .. ([[ -l 'ssh -p %s %s@%s "tail -F %s/worker%s.log"']]):format(ssh_port or 22, ssh_user or 'f', host, mistress_path or '/home/f/proj/mistress_load', i)
 		end
 		cmd = cmd .. ' -s 2'
 
