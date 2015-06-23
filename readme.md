@@ -30,17 +30,16 @@ Currently I test on Debian and Ubuntu. Mistress should work on other popular Lin
 
 ## Setup
 ### Prepare
-    #ubuntu 12.10:
-    sudo apt-get install liblua5.1-socket2 liblua5.1-json liblua5.1-logging
-    #older debian-based?:
+    #ubuntu:
     sudo apt-get install lua-socket lua-json lua-logging
+    #older debian-based:
+    sudo apt-get install liblua5.1-socket2 liblua5.1-json liblua5.1-logging
     
-    sudo apt-get install zlib1g-dev
-    sudo apt-get install screen
+    sudo apt-get install zlib1g-dev screen
 
     sudo apt-get install git
     git clone https://github.com/fillest/mistress_load.git
-    cd mistress-load
+    cd mistress_load
 
     sudo apt-get install python-virtualenv
     virtualenv --no-site-packages venv
@@ -61,7 +60,7 @@ First, start statistics server (or use `no_stat_server = true` in script).
 Chech report at http://localhost:7777/report/list
 
 ## Feedback
-Any feedback or help (especially with tests, docs and spreading the word) is highly appreciated! My email: fsfeel@gmail.com*
+Any feedback or help (especially with tests, docs and spreading the word) is highly appreciated!
 
 ## Design
 Written in [C(C99)](http://en.wikipedia.org/wiki/C99) and [Lua](http://en.wikipedia.org/wiki/Lua_%28programming_language%29)/[LuaJIT](http://luajit.org/) using [libev](http://software.schmorp.de/pkg/libev.html) and [HTTP Parser](https://github.com/joyent/http-parser) libs
