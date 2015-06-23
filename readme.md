@@ -53,7 +53,7 @@ Currently I test on Debian and Ubuntu. Mistress should work on other popular Lin
 ## Usage
 First, start statistics server (or use `no_stat_server = true` in script).
 
-...Set up ssh keys
+...Set up ssh keys (for localhost-only - just `cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys`)
 
 `build/dev/mistress -s <your-test-script-name>`
 
