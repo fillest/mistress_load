@@ -336,10 +336,12 @@ function _M.Session:handle_cookies (raw_cookies, host, path)
 					cookie.path = v
 				elseif k == 'expires' then
 					cookie.expires = cookies.expires_to_timestamp(v)
-				elseif k == 'domain' then
+				elseif k == 'domain' or k == 'Domain' then --TODO just lowercase it?
 					cookie.domain = v
 				elseif k == 'HttpOnly' then
-					--pass
+					--TODO
+				elseif k == 'Max-Age' then
+					--TODO
 				else
 					error("handling cookie '" .. k .. "' part is not implemented, value: " .. (v or 'nil'))
 				end
