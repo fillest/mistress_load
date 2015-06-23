@@ -1,6 +1,7 @@
 local utils = assert(require 'mistress.utils')
 local socket = assert(require 'socket')
-local json = assert(require 'json')  -- https://github.com/harningt/luajson
+-- local json = assert(require 'json')  -- https://github.com/harningt/luajson
+local json = assert(require 'mistress.dkjson')  -- https://github.com/harningt/luajson
 local mistress = assert(require 'mistress.mistress')
 local session = assert(require 'mistress.session')
 local inspect = assert(require 'mistress.inspect')
@@ -77,7 +78,8 @@ end
 function _M.Launcher:send_stats (cur_step)
 	if not self._no_stat_server then
 		--~ print(inspect(self.stat.stat_buf))
-		local out_data = json.encode.encode({
+		-- local out_data = json.encode.encode({
+		local out_data = json.encode({
 			node = self._opts.node_id,
 			step = cur_step,
 			data = self.stat.stat_buf,
