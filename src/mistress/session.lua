@@ -334,7 +334,7 @@ function _M.Session:handle_cookies (raw_cookies, host, path)
 			else
 				if k == 'path' or k == 'Path' then
 					cookie.path = v
-				elseif k == 'expires' then
+				elseif k == 'expires' or k == 'Expires' then
 					cookie.expires = cookies.expires_to_timestamp(v)
 				elseif k == 'domain' or k == 'Domain' then --TODO just lowercase it?
 					cookie.domain = v
