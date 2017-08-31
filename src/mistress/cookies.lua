@@ -6,7 +6,7 @@ local inspect = assert(require 'mistress.inspect')
 --http://stackoverflow.com/a/4105340/1183239
 --WARNING: requires TZ env var = UTC
 local MON = {Jan=1,Feb=2,Mar=3,Apr=4,May=5,Jun=6,Jul=7,Aug=8,Sep=9,Oct=10,Nov=11,Dec=12}
-local CEFMT = '%a+, (%d+)-(%a+)-(%d+) (%d+):(%d+):(%d+) GMT'
+local CEFMT = '%a+, (%d+)[ -](%a+)[ -](%d+) (%d+):(%d+):(%d+) GMT' --https://tools.ietf.org/html/rfc2616#section-3.3.1
 function _M.expires_to_timestamp (raw)
 	local day, month, year, hour, min, sec = assert(raw:match(CEFMT))
 
